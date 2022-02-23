@@ -10,6 +10,10 @@
 - Renamed `size.NewSize` to `size.New`.
 - Optimized `size.unmarshalJSONObject` implementation.
 
+### Removed
+- Variable `sem.Zero`.
+  - Use `sem.Ver{}` instead.
+
 ## [0.1.0] - 2022-02-22
 ### Added
 - First release of util.

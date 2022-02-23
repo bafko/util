@@ -11,8 +11,3 @@ const (
 	// ZeroStringTag represents zero version in string tag form.
 	ZeroStringTag = "v0.0.0"
 )
-
-var (
-	// Zero represents zero version value.
-	Zero = Ver{}
-)
