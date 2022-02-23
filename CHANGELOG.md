@@ -13,6 +13,7 @@
 ### Removed
 - Variable `sem.Zero`.
   - Use `sem.Ver{}` instead.
+- Name of `date.filterNo.Contains` receiver.
 
 ## [0.1.0] - 2022-02-22
 ### Added
