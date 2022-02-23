@@ -52,7 +52,7 @@ func New(value uint64, unit string) (Size, error) {
 
 // Shorten returns the biggest unit as is possible for value without rounding.
 // Returned unit is always valid and binary (1024^x).
-// Example: For Size(1024) is returned (1, "kB"), but for Size(1025) is returned (1025, "B").
+// Example: For Size(1024) is returned (1, "KiB"), but for Size(1025) is returned (1025, "B").
 func (s Size) Shorten() (value uint64, unit string) {
 	if s == 0 {
 		return 0, Byte
@@ -187,7 +187,7 @@ func (s *Size) UnmarshalText(data []byte) error {
 // Example of JSON object form for Size(1024):
 //   {
 //     "value": 1,
-//     "unit": "kB"
+//     "unit": "KiB"
 //   }
 //
 // See also DisableMarshalJSONObjectForm and DisableMarshalJSONStringForm.
