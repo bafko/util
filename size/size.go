@@ -256,9 +256,10 @@ func (s Size) String() string {
 
 func (s Size) marshalJSONObject() []byte {
 	value, unit := s.Shorten()
-	b := []byte(`{"value":`)
+	b := make([]byte, 0, 32)
+	b = append(b, `{"`+ObjectKeyValue+`":`...)
 	b = strconv.AppendUint(b, value, 10)
-	b = append(b, `,"unit":"`...)
+	b = append(b, `,"`+ObjectKeyUnit+`":"`...)
 	b = append(b, unit...)
 	b = append(b, `"}`...)
 	return b

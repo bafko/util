@@ -225,43 +225,43 @@ func Test_unmarshalJSONObject(t *testing.T) {
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `no token`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("value", 0))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, 0))
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `expected type json.Number instead of int for value`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("value", json.Number(`0`)))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`)))
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `missing unit key`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("value", json.Number(`0`), errNoToken))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), errNoToken))
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `no token`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("value", json.Number(`0`), "value"))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyValue))
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `duplicated value key`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("value", json.Number(`0`), "unit", errNoToken))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, errNoToken))
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `no token`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("value", json.Number(`0`), "unit", 0))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, 0))
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `expected type string instead of int for unit`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("value", json.Number(`0`), "unit", `B`))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, `B`))
 	assert.Zero(t, s)
 	assert.NoError(t, err)
 
-	s, err = unmarshalJSONObject(newDecoderMock("unit", `B`))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`))
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `missing value key`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("unit", `B`, "unit"))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`, ObjectKeyUnit))
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `duplicated unit key`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("unit", `B`, "value", json.Number(`0`)))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`, ObjectKeyValue, json.Number(`0`)))
 	assert.Zero(t, s)
 	assert.NoError(t, err)
 

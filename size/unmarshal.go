@@ -13,6 +13,11 @@ import (
 	"strings"
 )
 
+const (
+	ObjectKeyValue = "value"
+	ObjectKeyUnit  = "unit"
+)
+
 var (
 	// MaxTextLength allows limiting UnmarshalText input.
 	// Set 0 to disable this setting.
@@ -171,7 +176,7 @@ keys:
 		// string is guaranteed by encoding/json package
 		key := t.(string)
 		switch strings.ToLower(key) {
-		case "value":
+		case ObjectKeyValue:
 			if value != nil {
 				return 0, errors.New("duplicated value key")
 			}
@@ -182,7 +187,7 @@ keys:
 			if !d.More() {
 				break keys
 			}
-		case "unit":
+		case ObjectKeyUnit:
 			if unit != nil {
 				return 0, errors.New("duplicated unit key")
 			}
