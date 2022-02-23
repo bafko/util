@@ -73,7 +73,7 @@ func DefaultUnmarshalText(data []byte) (Size, error) {
 		return 0, newParseError(funcName, s, errors.New("unit disabled"))
 	}
 
-	size, err := NewSize(value, unit)
+	size, err := New(value, unit)
 	if err != nil {
 		return 0, newParseError(funcName, s, err)
 	}
@@ -209,7 +209,7 @@ func newOrError(value *uint64, unit *string) (Size, error) {
 	if unit == nil {
 		return 0, errors.New("missing unit key")
 	}
-	return NewSize(*value, *unit)
+	return New(*value, *unit)
 }
 
 func decodeValue(d decoder) (*uint64, error) {

@@ -4,6 +4,7 @@
 
 ## [0.2.0] - 2022-02-24
 ### Changed
+- Renamed `size.NewSize` to `size.New`.
 - Optimized `size.unmarshalJSONObject` implementation.
 
 ## [0.1.0] - 2022-02-22

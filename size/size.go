@@ -28,8 +28,8 @@ var (
 // If unit is not present, number is always represented as value in bytes.
 type Size uint64
 
-// NewSize creates new Size value with specified unit.
-func NewSize(value uint64, unit string) (Size, error) {
+// New creates new Size value with specified unit.
+func New(value uint64, unit string) (Size, error) {
 	if value == 0 {
 		if _, ok := zeroUnits[unit]; !ok {
 			return 0, newInvalidUnitError(unit)

@@ -14,31 +14,31 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func assertNewSize(t *testing.T, expected Size, value uint64, unit string) {
+func assertNew(t *testing.T, expected Size, value uint64, unit string) {
 	t.Helper()
-	actual, err := NewSize(value, unit)
+	actual, err := New(value, unit)
 	assert.Equal(t, expected, actual)
 	assert.NoError(t, err)
 }
 
-func assertNewSizeFail(t *testing.T, error string, value uint64, unit string) {
+func assertNewFail(t *testing.T, error string, value uint64, unit string) {
 	t.Helper()
-	actual, err := NewSize(value, unit)
+	actual, err := New(value, unit)
 	assert.Zero(t, actual)
 	assert.EqualError(t, err, error)
 }
 
-func Test_NewSize(t *testing.T) {
-	assertNewSize(t, 0, 0, "")
-	assertNewSizeFail(t, `invalid unit "h"`, 0, "h")
-	assertNewSize(t, 1, 1, "")
-	assertNewSizeFail(t, `invalid unit "h"`, 1, "h")
-	assertNewSizeFail(t, `invalid unit "YB"`, 1, Yottabyte)
-	assertNewSizeFail(t, `invalid unit "YiB"`, 1, Yobibyte)
-	assertNewSizeFail(t, `invalid unit "ZB"`, 1, Zettabyte)
-	assertNewSizeFail(t, `invalid unit "ZiB"`, 1, Zebibyte)
-	assertNewSizeFail(t, `value 18446744073709551615 with unit "EiB" is not suitable for uint64`, math.MaxUint64, Exbibyte)
-	assertNewSize(t, 1024*1024, 1, Mebibyte)
+func Test_New(t *testing.T) {
+	assertNew(t, 0, 0, "")
+	assertNewFail(t, `invalid unit "h"`, 0, "h")
+	assertNew(t, 1, 1, "")
+	assertNewFail(t, `invalid unit "h"`, 1, "h")
+	assertNewFail(t, `invalid unit "YB"`, 1, Yottabyte)
+	assertNewFail(t, `invalid unit "YiB"`, 1, Yobibyte)
+	assertNewFail(t, `invalid unit "ZB"`, 1, Zettabyte)
+	assertNewFail(t, `invalid unit "ZiB"`, 1, Zebibyte)
+	assertNewFail(t, `value 18446744073709551615 with unit "EiB" is not suitable for uint64`, math.MaxUint64, Exbibyte)
+	assertNew(t, 1024*1024, 1, Mebibyte)
 }
 
 func Test_Size_Shorten(t *testing.T) {
