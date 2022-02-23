@@ -199,6 +199,10 @@ keys:
 			}
 		}
 	}
+	return newOrError(value, unit)
+}
+
+func newOrError(value *uint64, unit *string) (Size, error) {
 	if value == nil {
 		return 0, errors.New("missing value key")
 	}

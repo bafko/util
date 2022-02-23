@@ -271,6 +271,22 @@ func Test_unmarshalJSONObject(t *testing.T) {
 	assert.EqualError(t, err, `object too big (3 > 2)`)
 }
 
+func Test_newOrError(t *testing.T) {
+	s, err := newOrError(nil, nil)
+	assert.Zero(t, s)
+	assert.EqualError(t, err, `missing value key`)
+
+	value := uint64(5)
+	s, err = newOrError(&value, nil)
+	assert.Zero(t, s)
+	assert.EqualError(t, err, `missing unit key`)
+
+	unit := Kibibyte
+	s, err = newOrError(&value, &unit)
+	assert.Equal(t, Size(5*1024), s)
+	assert.NoError(t, err)
+}
+
 func Test_decodeValue(t *testing.T) {
 	s, err := decodeValue(newDecoderMock(errNoToken))
 	assert.Nil(t, s)
