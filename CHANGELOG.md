@@ -5,6 +5,7 @@
 ## [0.2.0] - 2022-02-24
 ### Added
 - Introduced new constants `size.ObjectKeyValue` and `size.ObjectKeyUnit`.
+- Missing doc comments.
 
 ### Changed
 - Renamed `size.NewSize` to `size.New`.
