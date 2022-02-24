@@ -13,6 +13,11 @@ import (
 	"strings"
 )
 
+const (
+	ObjectKeyValue = "value"
+	ObjectKeyUnit  = "unit"
+)
+
 var (
 	// MaxTextLength allows limiting UnmarshalText input.
 	// Set 0 to disable this setting.
@@ -73,7 +78,7 @@ func DefaultUnmarshalText(data []byte) (Size, error) {
 		return 0, newParseError(funcName, s, errors.New("unit disabled"))
 	}
 
-	size, err := NewSize(value, unit)
+	size, err := New(value, unit)
 	if err != nil {
 		return 0, newParseError(funcName, s, err)
 	}
@@ -171,7 +176,7 @@ keys:
 		// string is guaranteed by encoding/json package
 		key := t.(string)
 		switch strings.ToLower(key) {
-		case "value":
+		case ObjectKeyValue:
 			if value != nil {
 				return 0, errors.New("duplicated value key")
 			}
@@ -182,7 +187,7 @@ keys:
 			if !d.More() {
 				break keys
 			}
-		case "unit":
+		case ObjectKeyUnit:
 			if unit != nil {
 				return 0, errors.New("duplicated unit key")
 			}
@@ -199,13 +204,17 @@ keys:
 			}
 		}
 	}
+	return newOrError(value, unit)
+}
+
+func newOrError(value *uint64, unit *string) (Size, error) {
 	if value == nil {
 		return 0, errors.New("missing value key")
 	}
 	if unit == nil {
 		return 0, errors.New("missing unit key")
 	}
-	return NewSize(*value, *unit)
+	return New(*value, *unit)
 }
 
 func decodeValue(d decoder) (*uint64, error) {

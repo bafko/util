@@ -8,6 +8,8 @@ import (
 	"fmt"
 )
 
+// InvalidUnitError represents invalid unit.
+// Value of error is invalid unit itself.
 type InvalidUnitError string
 
 func newInvalidUnitError(unit string) *InvalidUnitError {
@@ -15,6 +17,7 @@ func newInvalidUnitError(unit string) *InvalidUnitError {
 	return &err
 }
 
+// Error returns string representation of error.
 func (e *InvalidUnitError) Error() string {
 	const message = "invalid unit"
 	if e == nil {
@@ -23,6 +26,7 @@ func (e *InvalidUnitError) Error() string {
 	return fmt.Sprintf("%s %q", message, string(*e))
 }
 
+// InvalidValueError represents invalid combination of value and unit.
 type InvalidValueError struct {
 	Value uint64
 	Unit  string
@@ -35,6 +39,7 @@ func newInvalidValueError(value uint64, unit string) *InvalidValueError {
 	}
 }
 
+// Error returns string representation of error.
 func (e *InvalidValueError) Error() string {
 	if e.Unit == "" {
 		return fmt.Sprintf("value %d without unit is not suitable for uint64", e.Value)
@@ -42,6 +47,8 @@ func (e *InvalidValueError) Error() string {
 	return fmt.Sprintf("value %d with unit %q is not suitable for uint64", e.Value, e.Unit)
 }
 
+// ParseError represents error during version parsing.
+// Input can be empty, as same as Err.
 type ParseError struct {
 	Func  string
 	Input string
@@ -56,10 +63,12 @@ func newParseError(funcName, input string, err error) *ParseError {
 	}
 }
 
+// Unwrap returns under-laying error if any.
 func (e *ParseError) Unwrap() error {
 	return e.Err
 }
 
+// Error returns string representation of error.
 func (e *ParseError) Error() string {
 	err := "unable to parse"
 	if e.Err != nil {

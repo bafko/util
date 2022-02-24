@@ -28,8 +28,8 @@ var (
 // If unit is not present, number is always represented as value in bytes.
 type Size uint64
 
-// NewSize creates new Size value with specified unit.
-func NewSize(value uint64, unit string) (Size, error) {
+// New creates new Size value with specified unit.
+func New(value uint64, unit string) (Size, error) {
 	if value == 0 {
 		if _, ok := zeroUnits[unit]; !ok {
 			return 0, newInvalidUnitError(unit)
@@ -52,7 +52,7 @@ func NewSize(value uint64, unit string) (Size, error) {
 
 // Shorten returns the biggest unit as is possible for value without rounding.
 // Returned unit is always valid and binary (1024^x).
-// Example: For Size(1024) is returned (1, "kB"), but for Size(1025) is returned (1025, "B").
+// Example: For Size(1024) is returned (1, "KiB"), but for Size(1025) is returned (1025, "B").
 func (s Size) Shorten() (value uint64, unit string) {
 	if s == 0 {
 		return 0, Byte
@@ -187,7 +187,7 @@ func (s *Size) UnmarshalText(data []byte) error {
 // Example of JSON object form for Size(1024):
 //   {
 //     "value": 1,
-//     "unit": "kB"
+//     "unit": "KiB"
 //   }
 //
 // See also DisableMarshalJSONObjectForm and DisableMarshalJSONStringForm.
@@ -256,9 +256,10 @@ func (s Size) String() string {
 
 func (s Size) marshalJSONObject() []byte {
 	value, unit := s.Shorten()
-	b := []byte(`{"value":`)
+	b := make([]byte, 0, 32)
+	b = append(b, `{"`+ObjectKeyValue+`":`...)
 	b = strconv.AppendUint(b, value, 10)
-	b = append(b, `,"unit":"`...)
+	b = append(b, `,"`+ObjectKeyUnit+`":"`...)
 	b = append(b, unit...)
 	b = append(b, `"}`...)
 	return b

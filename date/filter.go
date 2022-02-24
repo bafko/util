@@ -48,7 +48,7 @@ func FilterFromTo(from, to *Date) (Filter, error) {
 type filterNo struct {
 }
 
-func (_ filterNo) Contains(_ Date) bool {
+func (filterNo) Contains(_ Date) bool {
 	return true
 }
 
