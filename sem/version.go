@@ -70,7 +70,7 @@ func (v Ver) Compare(ver Ver) int {
 	} else if ver.Patch < v.Patch {
 		return 1
 	}
-	return ComparePreRelease(ver.PreRelease, v.PreRelease)
+	return ComparePreRelease(v.PreRelease, ver.PreRelease)
 }
 
 // Latest returns the latest version from passed and current one.

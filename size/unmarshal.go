@@ -14,8 +14,11 @@ import (
 )
 
 const (
+	// ObjectKeyValue is key "value" for JSON object form.
 	ObjectKeyValue = "value"
-	ObjectKeyUnit  = "unit"
+
+	// ObjectKeyUnit is key "unit" for JSON object form.
+	ObjectKeyUnit = "unit"
 )
 
 var (

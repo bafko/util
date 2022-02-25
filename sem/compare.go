@@ -25,9 +25,9 @@ func DefaultComparePreRelease(a, b string) int {
 		return -1
 	}
 	if len(a) > len(b) {
-		return -comparePreRelease(b, a)
+		return comparePreRelease(b, a)
 	}
-	return comparePreRelease(a, b)
+	return -comparePreRelease(a, b)
 }
 
 func comparePreRelease(shorter, longer string) int {
