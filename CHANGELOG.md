@@ -5,6 +5,7 @@
 ## [0.2.1] - 2022-02-25
 ### Fixed
 - Added doc comments for `size.ObjectKeyValue` and `size.ObjectKeyUnit`.
+- Method `sem.Ver.Compare` and function `sem.DefaultComparePreRelease` comparison of release and pre-release.
 
 ## [0.2.0] - 2022-02-24
 ### Added

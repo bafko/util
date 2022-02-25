@@ -184,11 +184,14 @@ func Test_Version_Compare(t *testing.T) {
 		PreRelease: "",
 		Build:      "",
 	}
-	assert.Equal(t, 1, a.Compare(b))
-	assert.Equal(t, -1, b.Compare(a))
+	assert.Equal(t, -1, a.Compare(b))
+	assert.Equal(t, 1, b.Compare(a))
 	b.PreRelease = "alfa.1"
 	assert.Equal(t, 0, a.Compare(b))
 	assert.Equal(t, 0, b.Compare(a))
+	b.PreRelease = "alfa.2"
+	assert.Equal(t, -1, a.Compare(b))
+	assert.Equal(t, 1, b.Compare(a))
 }
 
 func Test_Version_Latest(t *testing.T) {
