@@ -29,7 +29,7 @@ func assertDefaultParserError(t *testing.T, error, input string, r Rule) {
 
 func Test_DefaultParser(t *testing.T) {
 	MaxTextLength = 4
-	assertDefaultParserError(t, `size.DefaultParser: input too long (5 > 4)`, "xxxxx", 0)
+	assertDefaultParserError(t, `size.DefaultParser: input too long: 5 > 4`, "xxxxx", 0)
 
 	MaxTextLength = 0
 	assertDefaultParserError(t, `size.DefaultParser: parsing "x": unable to parse`, "x", 0)
@@ -73,9 +73,9 @@ func testUnmarshalJSON(t *testing.T, f func(data []byte, r Rule) (Size, error)) 
 		return 10, nil
 	}
 	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "x": invalid character 'x' looking for beginning of value`, `x`, rule)
-	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "false": unexpected type bool`, `false`, rule)
+	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "false": invalid type: expected json.Delim, json.Number or string instead of bool`, `false`, rule)
 
-	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "[]": expected number, string or object`, `[]`, rule)
+	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "[]": expected object`, `[]`, rule)
 	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "{}": missing value key`, `{}`, rule)
 	assertUnmarshalJSON(t, f, 10, `{"value":10,"unit":"B"}`, rule)
 	rule = RuleEnableJSONStringForm
@@ -232,7 +232,7 @@ func Test_unmarshalJSONObject(t *testing.T) {
 
 	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, 0))
 	assert.Zero(t, s)
-	assert.EqualError(t, err, `expected type json.Number instead of int for value`)
+	assert.EqualError(t, err, `invalid type: expected json.Number instead of int for value`)
 
 	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`)))
 	assert.Zero(t, s)
@@ -252,7 +252,7 @@ func Test_unmarshalJSONObject(t *testing.T) {
 
 	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, 0))
 	assert.Zero(t, s)
-	assert.EqualError(t, err, `expected type string instead of int for unit`)
+	assert.EqualError(t, err, `invalid type: expected string instead of int for unit`)
 
 	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, `B`))
 	assert.Zero(t, s)
@@ -273,7 +273,7 @@ func Test_unmarshalJSONObject(t *testing.T) {
 	MaxObjectKeys = 2
 	s, err = unmarshalJSONObject(newDecoderMock("key", "value", "key", "value", "key", "value"))
 	assert.Zero(t, s)
-	assert.EqualError(t, err, `object too big (3 > 2)`)
+	assert.EqualError(t, err, `object too big: 3 > 2`)
 }
 
 func Test_newOrError(t *testing.T) {
@@ -298,7 +298,7 @@ func Test_decodeValue(t *testing.T) {
 	assert.EqualError(t, err, `no token`)
 	s, err = decodeValue(newDecoderMock(0))
 	assert.Nil(t, s)
-	assert.EqualError(t, err, `expected type json.Number instead of int for value`)
+	assert.EqualError(t, err, `invalid type: expected json.Number instead of int for value`)
 	s, err = decodeValue(newDecoderMock(json.Number(`x`)))
 	assert.Nil(t, s)
 	assert.EqualError(t, err, `strconv.ParseUint: parsing "x": invalid syntax`)
@@ -315,7 +315,7 @@ func Test_decodeUnit(t *testing.T) {
 	assert.EqualError(t, err, `no token`)
 	s, err = decodeUnit(newDecoderMock(0))
 	assert.Nil(t, s)
-	assert.EqualError(t, err, `expected type string instead of int for unit`)
+	assert.EqualError(t, err, `invalid type: expected string instead of int for unit`)
 	unit := "KiB"
 	s, err = decodeUnit(newDecoderMock(unit))
 	assert.Equal(t, &unit, s)

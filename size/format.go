@@ -25,6 +25,7 @@ const (
 	FormatPretty = Format(1 << iota)
 
 	// FormatHTML flag forces format all spaces as "&nbsp;" sequences.
+	// DefaultFormatter output can be safely converted to template.HTML if this flag is present.
 	FormatHTML
 )
 
@@ -37,6 +38,7 @@ func DefaultFormatter(buf []byte, s Size, f Format) ([]byte, error) {
 	for i, digit := range b {
 		buf = append(buf, digit)
 		if ((i + offset) % 3) == 2 {
+			// split to 3-digits long groups
 			buf = appendSeparator(buf, f)
 		}
 	}

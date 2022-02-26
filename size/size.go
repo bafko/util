@@ -59,6 +59,7 @@ func (s Size) Shorten() (value uint64, unit string) {
 	}
 	v := uint64(s)
 	for _, u := range shortenUnits {
+		// try to divide by 1024 without remainder
 		if (v & 0x3ff) != 0 {
 			return v, u
 		}

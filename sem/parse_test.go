@@ -32,7 +32,7 @@ func Test_DefaultParser(t *testing.T) {
 	v, err = DefaultParser([]byte(`x`), 0)
 	assert.Zero(t, v)
 	assert.Error(t, err)
-	v, err = DefaultParser([]byte(`1.2.3`), RuleDisableParseTag)
+	v, err = DefaultParser([]byte(`1.2.3`), RuleDisableTag)
 	assert.Equal(t, Ver{
 		Major:      1,
 		Minor:      2,
@@ -41,10 +41,10 @@ func Test_DefaultParser(t *testing.T) {
 		Build:      "",
 	}, v)
 	assert.NoError(t, err)
-	v, err = DefaultParser([]byte(`v1.2.3`), RuleDisableParseTag)
+	v, err = DefaultParser([]byte(`v1.2.3`), RuleDisableTag)
 	assert.Zero(t, v)
 	assert.Error(t, err)
-	v, err = DefaultParser([]byte(`x`), RuleDisableParseTag)
+	v, err = DefaultParser([]byte(`x`), RuleDisableTag)
 	assert.Zero(t, v)
 	assert.Error(t, err)
 }
@@ -182,6 +182,6 @@ func Test_unmarshalText(t *testing.T) {
 	assertUnmarshalTextFail(t, `"1.2000000000000000000000000000000.3": invalid minor`, `1.2000000000000000000000000000000.3`, formVersion)
 	assertUnmarshalTextFail(t, `"1.2.3000000000000000000000000000000": invalid patch`, `1.2.3000000000000000000000000000000`, formVersion)
 	MaxTextLength = 4
-	assertUnmarshalTextFail(t, `input too long (5 > 4)`, `xxxxx`, 0)
+	assertUnmarshalTextFail(t, `input too long: 5 > 4`, `xxxxx`, 0)
 	MaxTextLength = 0
 }

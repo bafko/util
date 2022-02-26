@@ -5,7 +5,6 @@
 package date
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -14,14 +13,14 @@ import (
 var (
 	// MaxTextLength allows limiting DefaultParser input.
 	// Set 0 to disable this setting.
+	// ErrInputTooLong is wrapped and used if limit is exceeded.
 	// Note: For year > 9999, increment MaxTextLength to > 10.
 	MaxTextLength = 10
 
 	// Parser is used by Date.UnmarshalText function.
 	Parser = DefaultParser
 
-	errBasicFormatDisabled = errors.New("basic format disabled")
-	pattern                = regexp.MustCompile(`^([0-9]{4,9})-?(1[0-2]|0[0-9])-?(3[01]|[0-2][0-9])$`)
+	pattern = regexp.MustCompile(`^([0-9]{4,9})-?(1[0-2]|0[0-9])-?(3[01]|[0-2][0-9])$`)
 )
 
 type (
@@ -45,7 +44,7 @@ func DefaultParser(data []byte, r Rule) (date Date, err error) {
 	}
 	if MaxTextLength != 0 && l > MaxTextLength {
 		// do not use input for "input too long" error
-		return Date{}, newParseError(funcName, "", fmt.Errorf("input too long (%d > %d)", l, MaxTextLength))
+		return Date{}, newParseError(funcName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxTextLength))
 	}
 	parts := pattern.FindSubmatch(data)
 	if len(parts) == 0 {
@@ -56,7 +55,7 @@ func DefaultParser(data []byte, r Rule) (date Date, err error) {
 			return Date{}, newParseError(funcName, string(data), nil)
 		}
 	} else if r&RuleDisableBasic != 0 {
-		return Date{}, newParseError(funcName, string(data), errBasicFormatDisabled)
+		return Date{}, newParseError(funcName, string(data), ErrBasicFormatDisabled)
 	}
 	year, _ := strconv.Atoi(string(parts[1]))
 	month, _ := strconv.Atoi(string(parts[2]))

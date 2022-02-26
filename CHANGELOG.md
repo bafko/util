@@ -11,9 +11,13 @@
   - Format/Parse and Formatter/Parser is better choice than Format/UnmarshalText.
   - Variables `UnmarshalText` renamed to `Parser`.
   - Functions `DefaultUnmarshalText` renamed to `DefaultParser`.
+- Published under-laying errors (all packages).
 
 ### Removed
 - Global unmarshal flag variables (all packages).
+
+### Fixed
+- Doc comments.
 
 ## [0.2.1] - 2022-02-25
 ### Fixed

@@ -9,7 +9,6 @@ package date
 
 import (
 	"database/sql/driver"
-	"errors"
 	"fmt"
 	"time"
 )
@@ -22,10 +21,6 @@ const (
 	TimeFormatBasic = `20060102`
 
 	version = 1
-)
-
-var (
-	errDateUnmarshalBinaryEmptyData = errors.New("Date.UnmarshalBinary: empty data")
 )
 
 // Date is representation of date.
@@ -187,16 +182,17 @@ func (d Date) MarshalBinary() ([]byte, error) {
 }
 
 // UnmarshalBinary sets date from passed data.
+// It can return wrapped ErrUnsupportedVersion or ErrInvalidLength.
 func (d *Date) UnmarshalBinary(data []byte) error {
 	l := len(data)
 	if l == 0 {
-		return errDateUnmarshalBinaryEmptyData
+		return fmt.Errorf("Date.UnmarshalBinary: %w: empty data", ErrInvalidLength)
 	}
 	if data[0] != version {
-		return fmt.Errorf("Date.UnmarshalBinary: unsupported version (%d != %d)", data[0], version)
+		return fmt.Errorf("Date.UnmarshalBinary: %w: expected %d instead of %d)", ErrUnsupportedVersion, version, data[0])
 	}
 	if l != 7 { // version(1)+year(4)+month(1)+day(1)
-		return fmt.Errorf("Date.UnmarshalBinary: invalid length (%d != 7)", l)
+		return fmt.Errorf("Date.UnmarshalBinary: %w: expected 7 instead of %d", ErrInvalidLength, l)
 	}
 	d.year = (int32(data[1])<<24 | int32(data[2])<<16 | int32(data[3])<<8 | int32(data[4])) - 1
 	d.month = data[5] - 1
@@ -220,12 +216,13 @@ func (d *Date) UnmarshalText(data []byte) error {
 }
 
 // Scan is support for database/sql package.
+// It can return wrapped ErrInvalidType.
 func (d *Date) Scan(src interface{}) error {
 	if t, ok := src.(time.Time); ok {
 		d.FromTime(t)
 		return nil
 	}
-	return fmt.Errorf("invalid type: %T", src)
+	return fmt.Errorf("%w: expected time.Time instead of %T", ErrInvalidType, src)
 }
 
 // Value is support for database/sql package.

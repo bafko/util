@@ -36,5 +36,5 @@ func Test_DefaultParser(t *testing.T) {
 	assertDefaultParser(t, New(2002, August, 7), `20020807`, 0)
 	assertDefaultParserFail(t, `date.DefaultParser: "00010101": basic format disabled`, `00010101`, RuleDisableBasic)
 	MaxTextLength = 10
-	assertDefaultParserFail(t, `date.DefaultParser: input too long (11 > 10)`, `xxxxxxxxxxx`, RuleDisableBasic)
+	assertDefaultParserFail(t, `date.DefaultParser: input too long: 11 > 10`, `xxxxxxxxxxx`, RuleDisableBasic)
 }

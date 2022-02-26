@@ -7,7 +7,6 @@ package size
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -24,23 +23,16 @@ const (
 var (
 	// MaxTextLength allows limiting Parser input.
 	// Set 0 to disable this setting.
+	// ErrInputTooLong is wrapped and used if limit is exceeded.
 	MaxTextLength = 128
 
 	// MaxObjectKeys allows limiting UnmarshalJSON object size input.
 	// Set 0 to disable this setting.
+	// ErrObjectTooBig is wrapped and used if limit is exceeded.
 	MaxObjectKeys = 16
 
 	// Parser is used by Size.UnmarshalText and Size.UnmarshalJSON functions.
 	Parser = DefaultParser
-
-	errUnitDisabled                 = errors.New("unit disabled")
-	errExpectedNumberStringOrObject = errors.New("expected number, string or object")
-	errObjectFormDisabled           = errors.New("object form disabled")
-	errStringFormDisabled           = errors.New("string form disabled")
-	errMissingValueKey              = errors.New("missing value key")
-	errMissingUnitKey               = errors.New("missing unit key")
-	errDuplicatedValueKey           = errors.New("duplicated value key")
-	errDuplicatedUnitKey            = errors.New("duplicated unit key")
 )
 
 type (
@@ -85,7 +77,7 @@ var (
 func DefaultParser(data []byte, r Rule) (Size, error) {
 	if l := len(data); MaxTextLength != 0 && l > MaxTextLength {
 		// do not use input for "input too long" error
-		return 0, newParseError(defaultParserFuncName, "", fmt.Errorf("input too long (%d > %d)", l, MaxTextLength))
+		return 0, newParseError(defaultParserFuncName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxTextLength))
 	}
 
 	if r&ruleIsJSON != 0 {
@@ -111,7 +103,7 @@ func unmarshalText(data []byte, r Rule) (Size, error) {
 		return Size(value), nil
 	}
 	if r&RuleDisableUnit != 0 {
-		return 0, newParseError(defaultParserFuncName, s, errUnitDisabled)
+		return 0, newParseError(defaultParserFuncName, s, ErrUnitDisabled)
 	}
 
 	size, err := New(value, unit)
@@ -131,10 +123,10 @@ func unmarshalJSON(data []byte, r Rule) (Size, error) {
 	switch v := t.(type) {
 	case json.Delim:
 		if v != '{' {
-			return 0, newParseError(defaultParserFuncName, string(data), errExpectedNumberStringOrObject)
+			return 0, newParseError(defaultParserFuncName, string(data), ErrExpectedObject)
 		}
 		if r&RuleEnableJSONObjectForm == 0 {
-			return 0, newParseError(defaultParserFuncName, string(data), errObjectFormDisabled)
+			return 0, newParseError(defaultParserFuncName, string(data), ErrObjectFormDisabled)
 		}
 		size, err := unmarshalJSONObject(d)
 		if err != nil {
@@ -145,11 +137,11 @@ func unmarshalJSON(data []byte, r Rule) (Size, error) {
 		return unmarshalText([]byte(v), 0)
 	case string:
 		if r&RuleEnableJSONStringForm == 0 {
-			return 0, newParseError(defaultParserFuncName, string(data), errStringFormDisabled)
+			return 0, newParseError(defaultParserFuncName, string(data), ErrStringFormDisabled)
 		}
 		return unmarshalText([]byte(v), 0)
 	default:
-		return 0, newParseError(defaultParserFuncName, string(data), fmt.Errorf("unexpected type %T", t))
+		return 0, newParseError(defaultParserFuncName, string(data), fmt.Errorf("%w: expected json.Delim, json.Number or string instead of %T", ErrInvalidType, t))
 	}
 }
 
@@ -189,7 +181,7 @@ func unmarshalJSONObject(d decoder) (Size, error) {
 keys:
 	for i := 0; true; i++ {
 		if i > MaxObjectKeys {
-			return 0, fmt.Errorf("object too big (%d > %d)", i, MaxObjectKeys)
+			return 0, fmt.Errorf("%w: %d > %d", ErrObjectTooBig, i, MaxObjectKeys)
 		}
 		if !d.More() {
 			break keys
@@ -203,7 +195,7 @@ keys:
 		switch strings.ToLower(key) {
 		case ObjectKeyValue:
 			if value != nil {
-				return 0, errDuplicatedValueKey
+				return 0, ErrDuplicatedValueKey
 			}
 			value, err = decodeValue(d)
 			if err != nil {
@@ -214,7 +206,7 @@ keys:
 			}
 		case ObjectKeyUnit:
 			if unit != nil {
-				return 0, errDuplicatedUnitKey
+				return 0, ErrDuplicatedUnitKey
 			}
 			unit, err = decodeUnit(d)
 			if err != nil {
@@ -234,10 +226,10 @@ keys:
 
 func newOrError(value *uint64, unit *string) (Size, error) {
 	if value == nil {
-		return 0, errMissingValueKey
+		return 0, ErrMissingValueKey
 	}
 	if unit == nil {
-		return 0, errMissingUnitKey
+		return 0, ErrMissingUnitKey
 	}
 	return New(*value, *unit)
 }
@@ -249,7 +241,7 @@ func decodeValue(d decoder) (*uint64, error) {
 	}
 	n, ok := t.(json.Number)
 	if !ok {
-		return nil, fmt.Errorf("expected type json.Number instead of %T for value", t)
+		return nil, fmt.Errorf("%w: expected json.Number instead of %T for value", ErrInvalidType, t)
 	}
 	u, err := strconv.ParseUint(n.String(), 10, 64)
 	if err != nil {
@@ -265,7 +257,7 @@ func decodeUnit(d decoder) (*string, error) {
 	}
 	s, ok := t.(string)
 	if !ok {
-		return nil, fmt.Errorf("expected type string instead of %T for unit", t)
+		return nil, fmt.Errorf("%w: expected string instead of %T for unit", ErrInvalidType, t)
 	}
 	return &s, nil
 }

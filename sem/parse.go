@@ -5,7 +5,6 @@
 package sem
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 )
@@ -13,6 +12,7 @@ import (
 var (
 	// MaxTextLength allows limiting Parser input.
 	// Set 0 to disable this setting.
+	// ErrInputTooLong is wrapped and used if limit is exceeded.
 	MaxTextLength = 1024
 
 	// Parser is used by Ver.UnmarshalText function.
@@ -25,9 +25,9 @@ type (
 )
 
 const (
-	// RuleDisableParseTag disallow tag format.
+	// RuleDisableTag disallow tag format.
 	// Tag format starts with prefix v.
-	RuleDisableParseTag = Rule(1 << iota)
+	RuleDisableTag = Rule(1 << iota)
 )
 
 // DefaultParser parse Ver from input.
@@ -36,7 +36,7 @@ const (
 func DefaultParser(data []byte, r Rule) (v Ver, err error) {
 	const funcName = "DefaultParser"
 	f := formVersion
-	if r&RuleDisableParseTag == 0 {
+	if r&RuleDisableTag == 0 {
 		f |= formTag
 	}
 	return unmarshalText(funcName, data, f)
@@ -75,14 +75,6 @@ const (
 	formTag
 )
 
-var (
-	errTagFormNotAllowed = errors.New("tag form not allowed")
-	errExpectedTagForm   = errors.New("expected tag form")
-	errInvalidMajor      = errors.New("invalid major")
-	errInvalidMinor      = errors.New("invalid minor")
-	errInvalidPatch      = errors.New("invalid patch")
-)
-
 func unmarshalText(funcName string, data []byte, f form) (v Ver, err error) {
 	l := len(data)
 	if l == 0 {
@@ -90,16 +82,16 @@ func unmarshalText(funcName string, data []byte, f form) (v Ver, err error) {
 	}
 	if MaxTextLength != 0 && l > MaxTextLength {
 		// do not use input for "input too long" error
-		return Ver{}, newParseError(funcName, "", fmt.Errorf("input too long (%d > %d)", l, MaxTextLength))
+		return Ver{}, newParseError(funcName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxTextLength))
 	}
 	if data[0] == tagPrefix {
 		if f&formTag == 0 {
-			return Ver{}, newParseError(funcName, string(data), errTagFormNotAllowed)
+			return Ver{}, newParseError(funcName, string(data), ErrTagFormNotAllowed)
 		}
 		data = data[1:]
 	} else {
 		if f&formVersion == 0 {
-			return Ver{}, newParseError(funcName, string(data), errExpectedTagForm)
+			return Ver{}, newParseError(funcName, string(data), ErrExpectedTagForm)
 		}
 	}
 	parts := pattern.FindSubmatch(data)
@@ -108,15 +100,15 @@ func unmarshalText(funcName string, data []byte, f form) (v Ver, err error) {
 	}
 	major, err := strconv.ParseUint(string(parts[1]), 10, 64)
 	if err != nil {
-		return Ver{}, newParseError(funcName, string(data), errInvalidMajor)
+		return Ver{}, newParseError(funcName, string(data), ErrInvalidMajor)
 	}
 	minor, err := strconv.ParseUint(string(parts[2]), 10, 64)
 	if err != nil {
-		return Ver{}, newParseError(funcName, string(data), errInvalidMinor)
+		return Ver{}, newParseError(funcName, string(data), ErrInvalidMinor)
 	}
 	patch, err := strconv.ParseUint(string(parts[3]), 10, 64)
 	if err != nil {
-		return Ver{}, newParseError(funcName, string(data), errInvalidPatch)
+		return Ver{}, newParseError(funcName, string(data), ErrInvalidPatch)
 	}
 	return Ver{
 		Major:      major,

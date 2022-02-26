@@ -11,6 +11,7 @@ import (
 var (
 	// MaxTextLength allows limiting Parser input.
 	// Set 0 to disable this setting.
+	// ErrInputTooLong is wrapped and used if limit is exceeded.
 	MaxTextLength = 128
 
 	// Parser is used by Number.UnmarshalText function.
@@ -84,7 +85,7 @@ func checkInputLength(funcName string, data []byte, r Rule) (empty bool, err err
 	}
 	if MaxTextLength != 0 && l > MaxTextLength {
 		// do not use input for "input too long" error
-		return false, newNumberFormatError(funcName, "", fmt.Errorf("input too long (%d > %d)", l, MaxTextLength))
+		return false, newNumberFormatError(funcName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxTextLength))
 	}
 	return false, nil
 }
