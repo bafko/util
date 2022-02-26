@@ -20,9 +20,9 @@ func (n Number) MarshalText() ([]byte, error) {
 	return Formatter(nil, n, DefaultFormat)
 }
 
-// UnmarshalText using global UnmarshalText function.
+// UnmarshalText using global Parser function.
 func (n *Number) UnmarshalText(data []byte) error {
-	v, err := UnmarshalText(data)
+	v, err := Parser(data, 0)
 	if err != nil {
 		return err
 	}

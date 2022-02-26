@@ -7,10 +7,10 @@ package roman
 // Valid checks if passed value is valid roman number.
 // If not, error is returned.
 //
-// See also MaxTextLength and DisableEmptyAsZero.
-func Valid(data []byte) error {
+// See also MaxTextLength.
+func Valid(data []byte, r Rule) error {
 	const funcName = "Valid"
-	empty, err := checkInputLength(funcName, data)
+	empty, err := checkInputLength(funcName, data, r)
 	if err != nil {
 		return err
 	}

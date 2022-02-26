@@ -10,8 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func Test_DefaultUnmarshalText(t *testing.T) {
-	DisableEmptyAsZero = false
+func Test_DefaultParser(t *testing.T) {
 	MaxTextLength = 14
 	valid := map[string]Number{
 		"":         0,
@@ -80,23 +79,21 @@ func Test_DefaultUnmarshalText(t *testing.T) {
 		// test in, "M"+in, "MM"+in...
 		for i := Number(0); i < 4; i++ {
 			expected := out + (1000 * i)
-			actual, err := DefaultUnmarshalText([]byte(actualIn))
+			actual, err := DefaultParser([]byte(actualIn), 0)
 			assert.NoError(t, err)
-			assert.Equalf(t, expected, actual,
-				"%s should be %d, not %d", actualIn, expected, actual)
+			assert.Equalf(t, expected, actual, "%s should be %d, not %d", actualIn, expected, actual)
 			actualIn = string(thousand) + actualIn
 		}
 	}
 	for _, in := range invalid {
-		i, err := DefaultUnmarshalText([]byte(in))
+		i, err := DefaultParser([]byte(in), 0)
 		assert.Error(t, err)
 		assert.Zero(t, i)
 	}
-	DisableEmptyAsZero = true
-	actual, err := DefaultUnmarshalText([]byte(nil))
+	actual, err := DefaultParser([]byte(nil), RuleDisableEmptyAsZero)
 	assert.Error(t, err)
 	assert.Zero(t, actual)
-	actual, err = DefaultUnmarshalText([]byte(``))
+	actual, err = DefaultParser([]byte(``), RuleDisableEmptyAsZero)
 	assert.Error(t, err)
 	assert.Zero(t, actual)
 }

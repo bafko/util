@@ -24,6 +24,10 @@ const (
 	version = 1
 )
 
+var (
+	errDateUnmarshalBinaryEmptyData = errors.New("Date.UnmarshalBinary: empty data")
+)
+
 // Date is representation of date.
 // Zero date is valid, representing value 0001-01-01.
 type Date struct {
@@ -163,7 +167,7 @@ func (d Date) DaysBetween(e Date) int {
 	return int(d.Time().Sub(e.Time()).Hours() / 24)
 }
 
-// MarshalBinary converts  date to binary representation.
+// MarshalBinary converts date to binary representation.
 // It never returns error.
 //
 // Byte positions:
@@ -186,7 +190,7 @@ func (d Date) MarshalBinary() ([]byte, error) {
 func (d *Date) UnmarshalBinary(data []byte) error {
 	l := len(data)
 	if l == 0 {
-		return errors.New("Date.UnmarshalBinary: empty data")
+		return errDateUnmarshalBinaryEmptyData
 	}
 	if data[0] != version {
 		return fmt.Errorf("Date.UnmarshalBinary: unsupported version (%d != %d)", data[0], version)
@@ -205,9 +209,9 @@ func (d Date) MarshalText() ([]byte, error) {
 	return Formatter(nil, d, 0)
 }
 
-// UnmarshalText using global UnmarshalText function.
+// UnmarshalText using global Parser function.
 func (d *Date) UnmarshalText(data []byte) error {
-	date, err := UnmarshalText(data)
+	date, err := Parser(data, 0)
 	if err != nil {
 		return err
 	}

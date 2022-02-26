@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2022-02-28
+### Added
+- Type `Rule` and `DefaultParser` parameter of same type (all packages).
+
+### Changed
+- Renamed all unmarshal global functions to parse (all packages).
+  - Format/Parse and Formatter/Parser is better choice than Format/UnmarshalText.
+  - Variables `UnmarshalText` renamed to `Parser`.
+  - Functions `DefaultUnmarshalText` renamed to `DefaultParser`.
+
+### Removed
+- Global unmarshal flag variables (all packages).
+
 ## [0.2.1] - 2022-02-25
 ### Fixed
 - Added doc comments for `size.ObjectKeyValue` and `size.ObjectKeyUnit`.
@@ -25,7 +38,8 @@
 ### Added
 - First release of util.
 
-[Unreleased]: https://github.com/livesport-tv/util/compare/v0.2.1...master
+[Unreleased]: https://github.com/livesport-tv/util/compare/v0.3.0...master
+[0.3.0]: https://github.com/livesport-tv/util/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/livesport-tv/util/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/livesport-tv/util/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/livesport-tv/util/releases/tag/v0.1.0

@@ -14,7 +14,7 @@ import (
 type Format int
 
 const (
-	// FormatBasic enforce date format without separators, e.g. YYYYMMDD.
+	// FormatBasic enforce date format without separators, i.e. YYYYMMDD.
 	FormatBasic = Format(1 << iota)
 )
 
@@ -24,7 +24,7 @@ var (
 )
 
 // DefaultFormatter formats date.
-// Default format is ISO 8601 extended format, e.g. YYYY-MM-DD.
+// Default format is ISO 8601 extended format, i.e. YYYY-MM-DD.
 // It reacts to Format flags and never returns error.
 func DefaultFormatter(buf []byte, d Date, f Format) ([]byte, error) {
 	format := `%04d-%02d-%02d`

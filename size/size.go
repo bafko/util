@@ -169,9 +169,10 @@ func (s Size) MarshalText() ([]byte, error) {
 	return b, nil
 }
 
-// UnmarshalText using global UnmarshalText function.
+// UnmarshalText using global Parser function.
+// DefaultRule affects UnmarshalText behavior.
 func (s *Size) UnmarshalText(data []byte) error {
-	v, err := UnmarshalText(data)
+	v, err := Parser(data, DefaultRule&ruleUnmarshalTextMask)
 	if err != nil {
 		return err
 	}
@@ -211,9 +212,10 @@ func (s Size) MarshalJSON() ([]byte, error) {
 	return strconv.AppendUint(nil, uint64(s), 10), nil
 }
 
-// UnmarshalJSON using global UnmarshalJSON function.
+// UnmarshalJSON using global Parser function.
+// DefaultRule affects UnmarshalJSON behavior.
 func (s *Size) UnmarshalJSON(data []byte) error {
-	v, err := UnmarshalJSON(data)
+	v, err := Parser(data, DefaultRule)
 	if err != nil {
 		return err
 	}

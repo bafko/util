@@ -13,78 +13,83 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func assertDefaultUnmarshalText(t *testing.T, expected uint64, input string) {
+func assertDefaultParser(t *testing.T, expected uint64, input string, r Rule) {
 	t.Helper()
-	s, err := DefaultUnmarshalText([]byte(input))
+	s, err := DefaultParser([]byte(input), r)
 	assert.NoErrorf(t, err, "invalid case for input %q", input)
 	assert.Equal(t, Size(expected), s, "invalid case for input %q: expected %d bytes", input, expected)
 }
 
-func assertDefaultUnmarshalTextError(t *testing.T, error, input string) {
+func assertDefaultParserError(t *testing.T, error, input string, r Rule) {
 	t.Helper()
-	s, err := DefaultUnmarshalText([]byte(input))
+	s, err := DefaultParser([]byte(input), r)
 	assert.EqualErrorf(t, err, error, "invalid case for input %q", input)
 	assert.Zero(t, s, "invalid case for input %q: expected zero", input)
 }
 
-func Test_DefaultUnmarshalText(t *testing.T) {
+func Test_DefaultParser(t *testing.T) {
 	MaxTextLength = 4
-	DisableUnmarshalTextUnit = false
-	assertDefaultUnmarshalTextError(t, `size.DefaultUnmarshalText: input too long (5 > 4)`, "xxxxx")
+	assertDefaultParserError(t, `size.DefaultParser: input too long (5 > 4)`, "xxxxx", 0)
 
 	MaxTextLength = 0
-	assertDefaultUnmarshalTextError(t, `size.DefaultUnmarshalText: parsing "x": unable to parse`, "x")
-	assertDefaultUnmarshalTextError(t, `size.DefaultUnmarshalText: parsing "1000000000000000000000000000000": strconv.ParseUint: parsing "1000000000000000000000000000000": value out of range`, "1000000000000000000000000000000")
+	assertDefaultParserError(t, `size.DefaultParser: parsing "x": unable to parse`, "x", 0)
+	assertDefaultParserError(t, `size.DefaultParser: parsing "1000000000000000000000000000000": strconv.ParseUint: parsing "1000000000000000000000000000000": value out of range`, "1000000000000000000000000000000", 0)
 
-	DisableUnmarshalTextUnit = true
-	assertDefaultUnmarshalTextError(t, `size.DefaultUnmarshalText: parsing "1B": unit disabled`, "1B")
+	assertDefaultParserError(t, `size.DefaultParser: parsing "1B": unit disabled`, "1B", RuleDisableUnit)
 
-	DisableUnmarshalTextUnit = false
-	assertDefaultUnmarshalText(t, 0, "0")
-	assertDefaultUnmarshalText(t, 0, "0B")
-	assertDefaultUnmarshalText(t, 0, "0 B")
-	assertDefaultUnmarshalText(t, 1, "1B")
-	assertDefaultUnmarshalText(t, 1, "1 B")
-	assertDefaultUnmarshalText(t, 1024, "1 KiB")
-	assertDefaultUnmarshalText(t, 1000, "1 kB")
-	assertDefaultUnmarshalTextError(t, `size.DefaultUnmarshalText: parsing "1048576 EiB": value 1048576 with unit "EiB" is not suitable for uint64`, "1048576 EiB")
+	assertDefaultParser(t, 0, "0", 0)
+	assertDefaultParser(t, 0, "0B", 0)
+	assertDefaultParser(t, 0, "0 B", 0)
+	assertDefaultParser(t, 1, "1B", 0)
+	assertDefaultParser(t, 1, "1 B", 0)
+	assertDefaultParser(t, 1024, "1 KiB", 0)
+	assertDefaultParser(t, 1000, "1 kB", 0)
+	assertDefaultParserError(t, `size.DefaultParser: parsing "1048576 EiB": value 1048576 with unit "EiB" is not suitable for uint64`, "1048576 EiB", 0)
+
+	testUnmarshalJSON(t, DefaultParser)
 }
 
-func assertDefaultUnmarshalJSON(t *testing.T, expected uint64, input string) {
+func assertUnmarshalJSON(t *testing.T, f func(data []byte, r Rule) (Size, error), expected uint64, input string, r Rule) {
 	t.Helper()
-	s, err := DefaultUnmarshalJSON([]byte(input))
+	s, err := f([]byte(input), r)
 	assert.NoErrorf(t, err, "invalid case for input %q", input)
 	assert.Equal(t, Size(expected), s, "invalid case for input %q: expected %d bytes", input, expected)
 }
 
-func assertDefaultUnmarshalJSONError(t *testing.T, error, input string) {
+func assertUnmarshalJSONError(t *testing.T, f func(data []byte, r Rule) (Size, error), error, input string, r Rule) {
 	t.Helper()
-	s, err := DefaultUnmarshalJSON([]byte(input))
+	s, err := f([]byte(input), r)
 	assert.EqualErrorf(t, err, error, "invalid case for input %q", input)
 	assert.Zero(t, s, "invalid case for input %q: expected zero", input)
 }
 
-func Test_DefaultUnmarshalJSON(t *testing.T) {
-	DisableUnmarshalJSONObjectForm = false
-	DisableUnmarshalJSONStringForm = false
-	UnmarshalText = func(data []byte) (Size, error) {
+func testUnmarshalJSON(t *testing.T, f func(data []byte, r Rule) (Size, error)) {
+	t.Helper()
+
+	rule := RuleEnableJSONStringForm | RuleEnableJSONObjectForm
+	Parser = func(data []byte, r Rule) (Size, error) {
 		assert.Equal(t, []byte("10"), data)
+		assert.Equal(t, rule, r)
 		return 10, nil
 	}
-	assertDefaultUnmarshalJSONError(t, `size.DefaultUnmarshalJSON: parsing "x": invalid character 'x' looking for beginning of value`, `x`)
-	assertDefaultUnmarshalJSONError(t, `size.DefaultUnmarshalJSON: parsing "false": unexpected type bool`, `false`)
+	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "x": invalid character 'x' looking for beginning of value`, `x`, rule)
+	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "false": unexpected type bool`, `false`, rule)
 
-	assertDefaultUnmarshalJSONError(t, `size.DefaultUnmarshalJSON: parsing "[]": expected number, string or object`, `[]`)
-	assertDefaultUnmarshalJSONError(t, `size.DefaultUnmarshalJSON: parsing "{}": missing value key`, `{}`)
-	assertDefaultUnmarshalJSON(t, 10, `{"value":10,"unit":"B"}`)
-	DisableUnmarshalJSONObjectForm = true
-	assertDefaultUnmarshalJSONError(t, `size.DefaultUnmarshalJSON: parsing "{}": object form disabled`, `{}`)
+	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "[]": expected number, string or object`, `[]`, rule)
+	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "{}": missing value key`, `{}`, rule)
+	assertUnmarshalJSON(t, f, 10, `{"value":10,"unit":"B"}`, rule)
+	rule = RuleEnableJSONStringForm
+	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "{}": object form disabled`, `{}`, rule)
 
-	assertDefaultUnmarshalJSON(t, 10, `10`)
+	assertUnmarshalJSON(t, f, 10, `10`, rule)
 
-	assertDefaultUnmarshalJSON(t, 10, `"10"`)
-	DisableUnmarshalJSONStringForm = true
-	assertDefaultUnmarshalJSONError(t, `size.DefaultUnmarshalJSON: parsing "\"10\"": string form disabled`, `"10"`)
+	assertUnmarshalJSON(t, f, 10, `"10"`, rule)
+	rule = RuleEnableJSONObjectForm
+	assertUnmarshalJSONError(t, f, `size.DefaultParser: parsing "\"10\"": string form disabled`, `"10"`, rule)
+}
+
+func Test_UnmarshalJSON(t *testing.T) {
+	testUnmarshalJSON(t, unmarshalJSON)
 }
 
 type spacePermutation []rune

@@ -12,26 +12,33 @@ import (
 )
 
 var (
-	// MaxTextLength allows limiting UnmarshalText input.
+	// MaxTextLength allows limiting DefaultParser input.
 	// Set 0 to disable this setting.
 	// Note: For year > 9999, increment MaxTextLength to > 10.
 	MaxTextLength = 10
 
-	// DisableUnmarshalBasic disallow basic format at DefaultUnmarshalText.
-	DisableUnmarshalBasic = false
-
-	// UnmarshalText is used by Date.UnmarshalText function.
-	UnmarshalText = DefaultUnmarshalText
+	// Parser is used by Date.UnmarshalText function.
+	Parser = DefaultParser
 
 	errBasicFormatDisabled = errors.New("basic format disabled")
 	pattern                = regexp.MustCompile(`^([0-9]{4,9})-?(1[0-2]|0[0-9])-?(3[01]|[0-2][0-9])$`)
 )
 
-// DefaultUnmarshalText parse Date from text.
+type (
+	// Rule allows configuring Parser behavior.
+	Rule int
+)
+
+const (
+	// RuleDisableBasic disallow basic format (i.e. YYYYMMDD).
+	RuleDisableBasic = Rule(1 << iota)
+)
+
+// DefaultParser parse Date from input.
 //
-// See also MaxTextLength and DisableUnmarshalBasic.
-func DefaultUnmarshalText(data []byte) (date Date, err error) {
-	const funcName = "DefaultUnmarshalText"
+// See also MaxTextLength.
+func DefaultParser(data []byte, r Rule) (date Date, err error) {
+	const funcName = "DefaultParser"
 	l := len(data)
 	if l == 0 {
 		return Date{}, newParseError(funcName, "", nil)
@@ -48,7 +55,7 @@ func DefaultUnmarshalText(data []byte) (date Date, err error) {
 		if !sep2 || data[l-6] != '-' { // disallow YYYY-MMDD and YYYYMM-YY formats
 			return Date{}, newParseError(funcName, string(data), nil)
 		}
-	} else if DisableUnmarshalBasic {
+	} else if r&RuleDisableBasic != 0 {
 		return Date{}, newParseError(funcName, string(data), errBasicFormatDisabled)
 	}
 	year, _ := strconv.Atoi(string(parts[1]))

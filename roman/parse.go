@@ -9,27 +9,33 @@ import (
 )
 
 var (
-	// MaxTextLength allows limiting UnmarshalText input.
+	// MaxTextLength allows limiting Parser input.
 	// Set 0 to disable this setting.
 	MaxTextLength = 128
 
-	// DisableEmptyAsZero force error if empty input is passed to DefaultUnmarshalText instead of zero as result.
-	// It also affects Valid function.
-	DisableEmptyAsZero = false
-
-	// UnmarshalText is used by Number.UnmarshalText function.
-	UnmarshalText = DefaultUnmarshalText
+	// Parser is used by Number.UnmarshalText function.
+	Parser = DefaultParser
 )
 
-// DefaultUnmarshalText converts roman number to decimal form.
+type (
+	// Rule allows configuring Parser behavior.
+	Rule int
+)
+
+const (
+	// RuleDisableEmptyAsZero force error if empty input is passed to DefaultParser instead of zero as result.
+	RuleDisableEmptyAsZero = Rule(1 << iota)
+)
+
+// DefaultParser parse roman number from input.
 // It returns error if passed value is not valid roman number.
 // Parsing is case-insensitive.
 // Long and short forms of roman numbers are accepted (e.g. IIII and IV).
 //
 // See also MaxTextLength.
-func DefaultUnmarshalText(data []byte) (Number, error) {
-	const funcName = "DefaultUnmarshalText"
-	empty, err := checkInputLength(funcName, data)
+func DefaultParser(data []byte, r Rule) (Number, error) {
+	const funcName = "DefaultParser"
+	empty, err := checkInputLength(funcName, data, r)
 	if err != nil {
 		return 0, err
 	}
@@ -68,10 +74,10 @@ func parseGroup(s []byte, unit uint64, digit5, digit10 byte) (decimal uint64) {
 	return l * unit
 }
 
-func checkInputLength(funcName string, data []byte) (empty bool, err error) {
+func checkInputLength(funcName string, data []byte, r Rule) (empty bool, err error) {
 	l := len(data)
 	if l == 0 {
-		if DisableEmptyAsZero {
+		if r&RuleDisableEmptyAsZero != 0 {
 			return false, newNumberFormatError(funcName, "", nil)
 		}
 		return true, nil

@@ -33,15 +33,17 @@ func Test_Number_MarshalText(t *testing.T) {
 
 func Test_Number_UnmarshalText(t *testing.T) {
 	err := errors.New("error")
-	UnmarshalText = func(data []byte) (Number, error) {
+	Parser = func(data []byte, r Rule) (Number, error) {
 		assert.Equal(t, []byte(`abc`), data)
+		assert.Equal(t, Rule(0), r)
 		return 0, err
 	}
 	n := Number(123)
 	assert.Equal(t, err, n.UnmarshalText([]byte(`abc`)))
 	assert.Equal(t, Number(123), n)
-	UnmarshalText = func(data []byte) (Number, error) {
+	Parser = func(data []byte, r Rule) (Number, error) {
 		assert.Equal(t, []byte(`abc`), data)
+		assert.Equal(t, Rule(0), r)
 		return Number(15749), nil
 	}
 	assert.NoError(t, n.UnmarshalText([]byte(`abc`)))

@@ -388,8 +388,9 @@ func Test_Version_MarshalText(t *testing.T) {
 }
 
 func Test_Version_UnmarshalText(t *testing.T) {
-	UnmarshalText = func(data []byte) (v Ver, err error) {
+	Parser = func(data []byte, r Rule) (v Ver, err error) {
 		assert.Equal(t, []byte(`ab`), data)
+		assert.Equal(t, Rule(0), r)
 		return Ver{
 			Major:      1,
 			Minor:      2,
@@ -408,8 +409,9 @@ func Test_Version_UnmarshalText(t *testing.T) {
 		Build:      "b",
 	}, v)
 	parseError := errors.New("parse error")
-	UnmarshalText = func(data []byte) (v Ver, err error) {
+	Parser = func(data []byte, r Rule) (v Ver, err error) {
 		assert.Equal(t, []byte(`ab`), data)
+		assert.Equal(t, Rule(0), r)
 		return Ver{}, parseError
 	}
 	assert.Equal(t, parseError, v.UnmarshalText([]byte(`ab`)))
