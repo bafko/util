@@ -54,22 +54,22 @@ func DefaultParser(data []byte, r Rule) (Number, error) {
 	return Number(decimal), nil
 }
 
-func parseGroup(s []byte, unit uint64, digit5, digit10 byte) (decimal uint64) {
+func parseGroup(data []byte, unit uint64, digit5, digit10 byte) (decimal uint64) {
 	const lowerShift = 'a' - 'A'
-	l := uint64(len(s))
+	l := uint64(len(data))
 	if l == 0 {
 		return 0
 	}
-	if s[0] == digit5 || s[0] == digit5-lowerShift {
+	if data[0] == digit5 || data[0] == digit5-lowerShift {
 		return (4 + l) * unit
 	}
 	if l == 1 {
 		return unit
 	}
-	if s[1] == digit5 || s[1] == digit5-lowerShift {
+	if data[1] == digit5 || data[1] == digit5-lowerShift {
 		return 4 * unit
 	}
-	if s[1] == digit10 || s[1] == digit10-lowerShift {
+	if data[1] == digit10 || data[1] == digit10-lowerShift {
 		return 9 * unit
 	}
 	return l * unit
