@@ -222,56 +222,72 @@ func (d *decoderMock) More() bool {
 
 func Test_unmarshalJSONObject(t *testing.T) {
 	MaxObjectKeys = 4
-	s, err := unmarshalJSONObject(newDecoderMock(errNoToken))
+	s, err := unmarshalJSONObject(newDecoderMock(errNoToken), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `no token`)
 
-	s, err = unmarshalJSONObject(newDecoderMock("key", errNoToken))
+	s, err = unmarshalJSONObject(newDecoderMock("key", errNoToken), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `no token`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, 0))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, 0), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `invalid type: expected json.Number instead of int for value`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`)))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`)), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `missing unit key`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), errNoToken))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), errNoToken), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `no token`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyValue))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyValue), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `duplicated value key`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, errNoToken))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, errNoToken), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `no token`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, 0))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, 0), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `invalid type: expected string instead of int for unit`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, `B`))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, `B`), 0)
 	assert.Zero(t, s)
 	assert.NoError(t, err)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `missing value key`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`, ObjectKeyUnit))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`, ObjectKeyUnit), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `duplicated unit key`)
 
-	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`, ObjectKeyValue, json.Number(`0`)))
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyUnit, `B`, ObjectKeyValue, json.Number(`0`)), 0)
 	assert.Zero(t, s)
 	assert.NoError(t, err)
 
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`0`), ObjectKeyUnit, `B`, `X`, `Y`), 0)
+	assert.Zero(t, s)
+	assert.NoError(t, err)
+
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`10`), ObjectKeyUnit, `B`), 0)
+	assert.Equal(t, Size(10), s)
+	assert.NoError(t, err)
+
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`10`), ObjectKeyUnit, `B`, `X`, `Y`), 0)
+	assert.Equal(t, Size(10), s)
+	assert.NoError(t, err)
+
+	s, err = unmarshalJSONObject(newDecoderMock(ObjectKeyValue, json.Number(`10`), ObjectKeyUnit, `B`, `X`, `Y`), RuleDisallowUnknownKeys)
+	assert.Zero(t, s)
+	assert.EqualError(t, err, `unexpected key: "X"`)
+
 	MaxObjectKeys = 2
-	s, err = unmarshalJSONObject(newDecoderMock("key", "value", "key", "value", "key", "value"))
+	s, err = unmarshalJSONObject(newDecoderMock("key", "value", "key", "value", "key", "value"), 0)
 	assert.Zero(t, s)
 	assert.EqualError(t, err, `object too big: 3 > 2`)
 }

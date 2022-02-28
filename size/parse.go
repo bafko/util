@@ -53,6 +53,9 @@ const (
 	// If not present, Parser returns error if Size is presented as JSON object.
 	RuleEnableJSONObjectForm
 
+	// RuleDisallowUnknownKeys enforce error if JSON object contains other keys than "value" and "unit".
+	RuleDisallowUnknownKeys
+
 	ruleIsJSON            = RuleEnableJSONStringForm | RuleEnableJSONObjectForm
 	ruleUnmarshalTextMask = RuleDisableUnit
 
@@ -128,7 +131,7 @@ func unmarshalJSON(data []byte, r Rule) (Size, error) {
 		if r&RuleEnableJSONObjectForm == 0 {
 			return 0, newParseError(defaultParserFuncName, string(data), ErrObjectFormDisabled)
 		}
-		size, err := unmarshalJSONObject(d)
+		size, err := unmarshalJSONObject(d, r)
 		if err != nil {
 			return 0, newParseError(defaultParserFuncName, string(data), err)
 		}
@@ -175,7 +178,7 @@ type decoder interface {
 	More() bool
 }
 
-func unmarshalJSONObject(d decoder) (Size, error) {
+func unmarshalJSONObject(d decoder, r Rule) (Size, error) {
 	value := (*uint64)(nil)
 	unit := (*string)(nil)
 keys:
@@ -216,6 +219,9 @@ keys:
 				break keys
 			}
 		default:
+			if r&RuleDisallowUnknownKeys != 0 {
+				return 0, fmt.Errorf("%w: %q", ErrUnexpectedKey, key)
+			}
 			if err := decodeAndSkipNested(d); err != nil {
 				return 0, err
 			}

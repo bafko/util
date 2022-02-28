@@ -47,6 +47,10 @@ var (
 	// Use errors.Is to check if returned error is ErrMissingUnitKey.
 	ErrMissingUnitKey = errors.New("missing unit key")
 
+	// ErrUnexpectedKey is wrapped and returned by DefaultParser if RuleEnableJSONObjectForm and RuleDisallowUnknownKeys is present and input contains JSON object with other than "value" or "unit" keys.
+	// Use errors.Is to check if returned error is ErrUnexpectedKey.
+	ErrUnexpectedKey = errors.New("unexpected key")
+
 	// ErrDuplicatedValueKey is wrapped and returned by DefaultParser if RuleEnableJSONObjectForm is present and input contains JSON object with duplicated "value" key.
 	// Use errors.Is to check if returned error is ErrDuplicatedValueKey.
 	ErrDuplicatedValueKey = errors.New("duplicated value key")
