@@ -28,10 +28,10 @@ func assertDefaultParserError(t *testing.T, error, input string, r Rule) {
 }
 
 func Test_DefaultParser(t *testing.T) {
-	MaxTextLength = 4
+	MaxInputLength = 4
 	assertDefaultParserError(t, `size.DefaultParser: input too long: 5 > 4`, "xxxxx", 0)
 
-	MaxTextLength = 0
+	MaxInputLength = 0
 	assertDefaultParserError(t, `size.DefaultParser: parsing "x": unable to parse`, "x", 0)
 	assertDefaultParserError(t, `size.DefaultParser: parsing "1000000000000000000000000000000": strconv.ParseUint: parsing "1000000000000000000000000000000": value out of range`, "1000000000000000000000000000000", 0)
 
@@ -49,26 +49,26 @@ func Test_DefaultParser(t *testing.T) {
 	testUnmarshalJSON(t, DefaultParser)
 }
 
-func assertUnmarshalJSON(t *testing.T, f func(data []byte, r Rule) (Size, error), expected uint64, input string, r Rule) {
+func assertUnmarshalJSON(t *testing.T, f func(input []byte, r Rule) (Size, error), expected uint64, input string, r Rule) {
 	t.Helper()
 	s, err := f([]byte(input), r)
 	assert.NoErrorf(t, err, "invalid case for input %q", input)
 	assert.Equal(t, Size(expected), s, "invalid case for input %q: expected %d bytes", input, expected)
 }
 
-func assertUnmarshalJSONError(t *testing.T, f func(data []byte, r Rule) (Size, error), error, input string, r Rule) {
+func assertUnmarshalJSONError(t *testing.T, f func(input []byte, r Rule) (Size, error), error, input string, r Rule) {
 	t.Helper()
 	s, err := f([]byte(input), r)
 	assert.EqualErrorf(t, err, error, "invalid case for input %q", input)
 	assert.Zero(t, s, "invalid case for input %q: expected zero", input)
 }
 
-func testUnmarshalJSON(t *testing.T, f func(data []byte, r Rule) (Size, error)) {
+func testUnmarshalJSON(t *testing.T, f func(input []byte, r Rule) (Size, error)) {
 	t.Helper()
 
 	rule := RuleEnableJSONStringForm | RuleEnableJSONObjectForm
-	Parser = func(data []byte, r Rule) (Size, error) {
-		assert.Equal(t, []byte("10"), data)
+	Parser = func(input []byte, r Rule) (Size, error) {
+		assert.Equal(t, []byte("10"), input)
 		assert.Equal(t, rule, r)
 		return 10, nil
 	}

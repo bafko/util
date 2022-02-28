@@ -21,10 +21,10 @@ const (
 )
 
 var (
-	// MaxTextLength allows limiting Parser input.
+	// MaxInputLength allows limiting Parser input.
 	// Set 0 to disable this setting.
 	// ErrInputTooLong is wrapped and used if limit is exceeded.
-	MaxTextLength = 128
+	MaxInputLength = 128
 
 	// MaxObjectKeys allows limiting UnmarshalJSON object size input.
 	// Set 0 to disable this setting.
@@ -76,22 +76,22 @@ var (
 // JSON object form must contain key "value" with positive or zero number value and "unit" with string value and valid size unit.
 // JSON object keys are case-insensitive.
 //
-// See also MaxTextLength and MaxObjectKeys.
-func DefaultParser(data []byte, r Rule) (Size, error) {
-	if l := len(data); MaxTextLength != 0 && l > MaxTextLength {
+// See also MaxInputLength and MaxObjectKeys.
+func DefaultParser(input []byte, r Rule) (Size, error) {
+	if l := len(input); MaxInputLength != 0 && l > MaxInputLength {
 		// do not use input for "input too long" error
-		return 0, newParseError(defaultParserFuncName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxTextLength))
+		return 0, newParseError(defaultParserFuncName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
 	}
 
 	if r&ruleIsJSON != 0 {
-		return unmarshalJSON(data, r)
+		return unmarshalJSON(input, r)
 	}
 
-	return unmarshalText(data, r)
+	return unmarshalText(input, r)
 }
 
-func unmarshalText(data []byte, r Rule) (Size, error) {
-	s := string(data)
+func unmarshalText(input []byte, r Rule) (Size, error) {
+	s := string(input)
 	number, unit := prepareNumber(s)
 
 	if number == "" {
@@ -116,35 +116,35 @@ func unmarshalText(data []byte, r Rule) (Size, error) {
 	return size, nil
 }
 
-func unmarshalJSON(data []byte, r Rule) (Size, error) {
-	d := json.NewDecoder(bytes.NewReader(data))
+func unmarshalJSON(input []byte, r Rule) (Size, error) {
+	d := json.NewDecoder(bytes.NewReader(input))
 	d.UseNumber()
 	t, err := d.Token()
 	if err != nil {
-		return 0, newParseError(defaultParserFuncName, string(data), err)
+		return 0, newParseError(defaultParserFuncName, string(input), err)
 	}
 	switch v := t.(type) {
 	case json.Delim:
 		if v != '{' {
-			return 0, newParseError(defaultParserFuncName, string(data), ErrExpectedObject)
+			return 0, newParseError(defaultParserFuncName, string(input), ErrExpectedObject)
 		}
 		if r&RuleEnableJSONObjectForm == 0 {
-			return 0, newParseError(defaultParserFuncName, string(data), ErrObjectFormDisabled)
+			return 0, newParseError(defaultParserFuncName, string(input), ErrObjectFormDisabled)
 		}
 		size, err := unmarshalJSONObject(d, r)
 		if err != nil {
-			return 0, newParseError(defaultParserFuncName, string(data), err)
+			return 0, newParseError(defaultParserFuncName, string(input), err)
 		}
 		return size, nil
 	case json.Number:
 		return unmarshalText([]byte(v), 0)
 	case string:
 		if r&RuleEnableJSONStringForm == 0 {
-			return 0, newParseError(defaultParserFuncName, string(data), ErrStringFormDisabled)
+			return 0, newParseError(defaultParserFuncName, string(input), ErrStringFormDisabled)
 		}
 		return unmarshalText([]byte(v), 0)
 	default:
-		return 0, newParseError(defaultParserFuncName, string(data), fmt.Errorf("%w: expected json.Delim, json.Number or string instead of %T", ErrInvalidType, t))
+		return 0, newParseError(defaultParserFuncName, string(input), fmt.Errorf("%w: expected json.Delim, json.Number or string instead of %T", ErrInvalidType, t))
 	}
 }
 

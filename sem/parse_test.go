@@ -160,7 +160,7 @@ func assertUnmarshalTextFail(t *testing.T, error, input string, f form) {
 }
 
 func Test_unmarshalText(t *testing.T) {
-	MaxTextLength = 0
+	MaxInputLength = 0
 	assertUnmarshalText(t, Ver{
 		Major:      1,
 		Minor:      2,
@@ -181,7 +181,7 @@ func Test_unmarshalText(t *testing.T) {
 	assertUnmarshalTextFail(t, `"1000000000000000000000000000000.2.3": invalid major`, `1000000000000000000000000000000.2.3`, formVersion)
 	assertUnmarshalTextFail(t, `"1.2000000000000000000000000000000.3": invalid minor`, `1.2000000000000000000000000000000.3`, formVersion)
 	assertUnmarshalTextFail(t, `"1.2.3000000000000000000000000000000": invalid patch`, `1.2.3000000000000000000000000000000`, formVersion)
-	MaxTextLength = 4
+	MaxInputLength = 4
 	assertUnmarshalTextFail(t, `input too long: 5 > 4`, `xxxxx`, 0)
-	MaxTextLength = 0
+	MaxInputLength = 0
 }

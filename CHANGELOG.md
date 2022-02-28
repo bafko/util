@@ -12,6 +12,8 @@
   - Variables `UnmarshalText` renamed to `Parser`.
   - Functions `DefaultUnmarshalText` renamed to `DefaultParser`.
 - Published under-laying errors (all packages).
+- Unified `input` and `data` names.
+  - Renamed `MaxTextLength` to `MaxInputLength`.
 
 ### Removed
 - Global unmarshal flag variables (all packages).

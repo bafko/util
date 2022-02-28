@@ -11,7 +11,7 @@ import (
 )
 
 func Test_DefaultParser(t *testing.T) {
-	MaxTextLength = 14
+	MaxInputLength = 14
 	valid := map[string]Number{
 		"":         0,
 		"I":        1,

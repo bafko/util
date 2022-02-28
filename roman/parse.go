@@ -9,10 +9,10 @@ import (
 )
 
 var (
-	// MaxTextLength allows limiting Parser input.
+	// MaxInputLength allows limiting Parser input.
 	// Set 0 to disable this setting.
 	// ErrInputTooLong is wrapped and used if limit is exceeded.
-	MaxTextLength = 128
+	MaxInputLength = 128
 
 	// Parser is used by Number.UnmarshalText function.
 	Parser = DefaultParser
@@ -33,19 +33,19 @@ const (
 // Parsing is case-insensitive.
 // Long and short forms of roman numbers are accepted (e.g. IIII and IV).
 //
-// See also MaxTextLength.
-func DefaultParser(data []byte, r Rule) (Number, error) {
+// See also MaxInputLength.
+func DefaultParser(input []byte, r Rule) (Number, error) {
 	const funcName = "DefaultParser"
-	empty, err := checkInputLength(funcName, data, r)
+	empty, err := checkInputLength(funcName, input, r)
 	if err != nil {
 		return 0, err
 	}
 	if empty {
 		return 0, nil
 	}
-	p := pattern.FindSubmatch(data)
+	p := pattern.FindSubmatch(input)
 	if len(p) == 0 {
-		return 0, newNumberFormatError(funcName, string(data), nil)
+		return 0, newNumberFormatError(funcName, string(input), nil)
 	}
 	decimal := uint64(len(p[1])) * 1000
 	for i, g := range groups {
@@ -54,38 +54,38 @@ func DefaultParser(data []byte, r Rule) (Number, error) {
 	return Number(decimal), nil
 }
 
-func parseGroup(data []byte, unit uint64, digit5, digit10 byte) (decimal uint64) {
+func parseGroup(input []byte, unit uint64, digit5, digit10 byte) (decimal uint64) {
 	const lowerShift = 'a' - 'A'
-	l := uint64(len(data))
+	l := uint64(len(input))
 	if l == 0 {
 		return 0
 	}
-	if data[0] == digit5 || data[0] == digit5-lowerShift {
+	if input[0] == digit5 || input[0] == digit5-lowerShift {
 		return (4 + l) * unit
 	}
 	if l == 1 {
 		return unit
 	}
-	if data[1] == digit5 || data[1] == digit5-lowerShift {
+	if input[1] == digit5 || input[1] == digit5-lowerShift {
 		return 4 * unit
 	}
-	if data[1] == digit10 || data[1] == digit10-lowerShift {
+	if input[1] == digit10 || input[1] == digit10-lowerShift {
 		return 9 * unit
 	}
 	return l * unit
 }
 
-func checkInputLength(funcName string, data []byte, r Rule) (empty bool, err error) {
-	l := len(data)
+func checkInputLength(funcName string, input []byte, r Rule) (empty bool, err error) {
+	l := len(input)
 	if l == 0 {
 		if r&RuleDisableEmptyAsZero != 0 {
 			return false, newNumberFormatError(funcName, "", nil)
 		}
 		return true, nil
 	}
-	if MaxTextLength != 0 && l > MaxTextLength {
+	if MaxInputLength != 0 && l > MaxInputLength {
 		// do not use input for "input too long" error
-		return false, newNumberFormatError(funcName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxTextLength))
+		return false, newNumberFormatError(funcName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
 	}
 	return false, nil
 }

@@ -25,7 +25,7 @@ func assertDefaultParserFail(t *testing.T, error, data string, r Rule) {
 }
 
 func Test_DefaultParser(t *testing.T) {
-	MaxTextLength = 0
+	MaxInputLength = 0
 	assertDefaultParserFail(t, `date.DefaultParser: invalid date`, ``, 0)
 	assertDefaultParserFail(t, `date.DefaultParser: "x": invalid date`, `x`, 0)
 	assertDefaultParserFail(t, `date.DefaultParser: "2020-0807": invalid date`, `2020-0807`, 0)
@@ -35,6 +35,6 @@ func Test_DefaultParser(t *testing.T) {
 	assertDefaultParser(t, New(2002, August, 7), `2002-08-07`, 0)
 	assertDefaultParser(t, New(2002, August, 7), `20020807`, 0)
 	assertDefaultParserFail(t, `date.DefaultParser: "00010101": basic format disabled`, `00010101`, RuleDisableBasic)
-	MaxTextLength = 10
+	MaxInputLength = 10
 	assertDefaultParserFail(t, `date.DefaultParser: input too long: 11 > 10`, `xxxxxxxxxxx`, RuleDisableBasic)
 }

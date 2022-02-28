@@ -11,7 +11,7 @@ import (
 )
 
 func Test_Valid(t *testing.T) {
-	MaxTextLength = 4
+	MaxInputLength = 4
 	assert.NoError(t, Valid([]byte(nil), 0))
 	assert.NoError(t, Valid([]byte(``), 0))
 	assert.EqualError(t, Valid([]byte(`xxxxx`), 0), `roman.Valid: input too long: 5 > 4`)
