@@ -10,11 +10,35 @@ import (
 )
 
 var (
-	// ErrInvalidPreRelease can be returned by Valid function if pre-release part is not valid.
+	// ErrInputTooLong is wrapped and returned if passed input is too long.
+	// Use errors.Is to check if returned error is ErrInputTooLong.
+	ErrInputTooLong = errors.New("input too long")
+
+	// ErrInvalidPreRelease is wrapped and returned by Valid function if pre-release part is not valid.
 	ErrInvalidPreRelease = errors.New("invalid pre-release")
 
-	// ErrInvalidBuild can be returned by Valid function if build part is not valid.
+	// ErrInvalidBuild is wrapped and returned by Valid function if build part is not valid.
 	ErrInvalidBuild = errors.New("invalid build")
+
+	// ErrTagFormNotAllowed is wrapped and returned if RuleDisableTag is present and input is tag.
+	// Use errors.Is to check if returned error is ErrTagFormNotAllowed.
+	ErrTagFormNotAllowed = errors.New("tag form not allowed")
+
+	// ErrExpectedTagForm is wrapped and returned if input is not tag.
+	// Use errors.Is to check if returned error is ErrExpectedTagForm.
+	ErrExpectedTagForm = errors.New("expected tag form")
+
+	// ErrInvalidMajor is wrapped and returned if input contains invalid major version.
+	// Use errors.Is to check if returned error is ErrInvalidMajor.
+	ErrInvalidMajor = errors.New("invalid major")
+
+	// ErrInvalidMinor is wrapped and returned if input contains invalid minor version.
+	// Use errors.Is to check if returned error is ErrInvalidMinor.
+	ErrInvalidMinor = errors.New("invalid minor")
+
+	// ErrInvalidPatch is wrapped and returned if input contains invalid patch version.
+	// Use errors.Is to check if returned error is ErrInvalidPatch.
+	ErrInvalidPatch = errors.New("invalid patch")
 )
 
 // ParseError represents error during version parsing.

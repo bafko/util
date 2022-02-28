@@ -5,7 +5,14 @@
 package roman
 
 import (
+	"errors"
 	"fmt"
+)
+
+var (
+	// ErrInputTooLong is wrapped and returned by DefaultParser and Valid if passed input is too long.
+	// Use errors.Is to check if returned error is ErrInputTooLong.
+	ErrInputTooLong = errors.New("input too long")
 )
 
 // NumberFormatError represents error during number parsing.

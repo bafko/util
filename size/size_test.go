@@ -220,8 +220,9 @@ func Test_Size_UnmarshalText(t *testing.T) {
 	value := Size(20 * 1024)
 
 	s := Size(10)
-	UnmarshalText = func(data []byte) (Size, error) {
-		assert.Equal(t, text, data)
+	Parser = func(input []byte, r Rule) (Size, error) {
+		assert.Equal(t, text, input)
+		assert.Equal(t, DefaultRule&ruleUnmarshalTextMask, r)
 		return value, nil
 	}
 	assert.NoError(t, s.UnmarshalText(text))
@@ -229,8 +230,9 @@ func Test_Size_UnmarshalText(t *testing.T) {
 
 	s = Size(10)
 	parseError := errors.New("parse error")
-	UnmarshalText = func(data []byte) (Size, error) {
-		assert.Equal(t, text, data)
+	Parser = func(input []byte, r Rule) (Size, error) {
+		assert.Equal(t, text, input)
+		assert.Equal(t, DefaultRule&ruleUnmarshalTextMask, r)
 		return 0, parseError
 	}
 	assert.Equal(t, parseError, s.UnmarshalText(text))
@@ -276,8 +278,9 @@ func Test_Size_UnmarshalJSON(t *testing.T) {
 	value := Size(20 * 1024)
 
 	s := Size(10)
-	UnmarshalJSON = func(data []byte) (Size, error) {
-		assert.Equal(t, json, data)
+	Parser = func(input []byte, r Rule) (Size, error) {
+		assert.Equal(t, json, input)
+		assert.Equal(t, DefaultRule, r)
 		return value, nil
 	}
 	assert.NoError(t, s.UnmarshalJSON(json))
@@ -285,8 +288,9 @@ func Test_Size_UnmarshalJSON(t *testing.T) {
 
 	s = Size(10)
 	parseError := errors.New("parse error")
-	UnmarshalJSON = func(data []byte) (Size, error) {
-		assert.Equal(t, json, data)
+	Parser = func(input []byte, r Rule) (Size, error) {
+		assert.Equal(t, json, input)
+		assert.Equal(t, DefaultRule, r)
 		return 0, parseError
 	}
 	assert.Equal(t, parseError, s.UnmarshalJSON(json))

@@ -5,7 +5,59 @@
 package size
 
 import (
+	"errors"
 	"fmt"
+)
+
+var (
+	// ErrInputTooLong is wrapped and returned by DefaultParser if passed input is too long.
+	// Use errors.Is to check if returned error is ErrInputTooLong.
+	ErrInputTooLong = errors.New("input too long")
+
+	// ErrObjectTooBig is wrapped and returned by DefaultParser if passed JSON object has too many keys.
+	// Use errors.Is to check if returned error is ErrObjectTooBig.
+	ErrObjectTooBig = errors.New("object too big")
+
+	// ErrInvalidType is wrapped and returned by DefaultParser if invalid type is occurred.
+	// Use errors.Is to check if returned error is ErrInvalidType.
+	ErrInvalidType = errors.New("invalid type")
+
+	// ErrUnitDisabled is wrapped and returned by DefaultParser if RuleDisableUnit is present and input contains unit.
+	// Use errors.Is to check if returned error is ErrUnitDisabled.
+	ErrUnitDisabled = errors.New("unit disabled")
+
+	// ErrExpectedObject is wrapped and returned by DefaultParser
+	// if RuleEnableJSONObjectForm is present and input contains invalid JSON kind.
+	// Use errors.Is to check if returned error is ErrExpectedObject.
+	ErrExpectedObject = errors.New("expected object")
+
+	// ErrObjectFormDisabled is wrapped and returned by DefaultParser if RuleEnableJSONObjectForm is not present and input contains JSON object.
+	// Use errors.Is to check if returned error is ErrObjectFormDisabled.
+	ErrObjectFormDisabled = errors.New("object form disabled")
+
+	// ErrStringFormDisabled is wrapped and returned by DefaultParser if RuleEnableJSONStringForm is not present and input contains JSON string.
+	// Use errors.Is to check if returned error is ErrStringFormDisabled.
+	ErrStringFormDisabled = errors.New("string form disabled")
+
+	// ErrMissingValueKey is wrapped and returned by DefaultParser if RuleEnableJSONObjectForm is present and input contains JSON object without "value" key.
+	// Use errors.Is to check if returned error is ErrMissingValueKey.
+	ErrMissingValueKey = errors.New("missing value key")
+
+	// ErrMissingUnitKey is wrapped and returned by DefaultParser if RuleEnableJSONObjectForm is present and input contains JSON object without "unit" key.
+	// Use errors.Is to check if returned error is ErrMissingUnitKey.
+	ErrMissingUnitKey = errors.New("missing unit key")
+
+	// ErrUnexpectedKey is wrapped and returned by DefaultParser if RuleEnableJSONObjectForm and RuleDisallowUnknownKeys is present and input contains JSON object with other than "value" or "unit" keys.
+	// Use errors.Is to check if returned error is ErrUnexpectedKey.
+	ErrUnexpectedKey = errors.New("unexpected key")
+
+	// ErrDuplicatedValueKey is wrapped and returned by DefaultParser if RuleEnableJSONObjectForm is present and input contains JSON object with duplicated "value" key.
+	// Use errors.Is to check if returned error is ErrDuplicatedValueKey.
+	ErrDuplicatedValueKey = errors.New("duplicated value key")
+
+	// ErrDuplicatedUnitKey is wrapped and returned by DefaultParser if RuleEnableJSONObjectForm is present and input contains JSON object with duplicated "unit" key.
+	// Use errors.Is to check if returned error is ErrDuplicatedUnitKey.
+	ErrDuplicatedUnitKey = errors.New("duplicated unit key")
 )
 
 // InvalidUnitError represents invalid unit.

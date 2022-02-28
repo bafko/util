@@ -6,8 +6,10 @@
 
 Open source implementation of Livesport TV utilities library.
 
-Format methods (`MarshalText`, `MarshalJSON`, `String`, ...) and 
-convert methods (`UnmarshalText`, `UnmarshalJSON`, ...) for all types are fully configurable.
+Each package provide `Formatter` and `Parser` variables to override default behavior of
+format methods (`MarshalText`, `MarshalJSON`, `String`, ...)
+and parse methods (`UnmarshalText`, `UnmarshalJSON`, ...).
+Default value of `Formatter` is `DefaultFormatter` and default value of `Parser` is `DefaultParser`.
 
 ## Date
 ```go
