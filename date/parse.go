@@ -25,6 +25,8 @@ var (
 
 type (
 	// Rule allows configuring Parser behavior.
+	// Available rules are:
+	//   RuleDisableBasic
 	Rule int
 )
 

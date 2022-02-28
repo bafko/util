@@ -37,6 +37,11 @@ var (
 
 type (
 	// Rule allows configuring Parser behavior.
+	// Available rules are:
+	//   RuleDisableUnit
+	//   RuleEnableJSONStringForm
+	//   RuleEnableJSONObjectForm
+	//   RuleDisallowUnknownKeys
 	Rule int
 )
 

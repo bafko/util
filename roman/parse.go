@@ -20,6 +20,8 @@ var (
 
 type (
 	// Rule allows configuring Parser behavior.
+	// Available rules are:
+	//   RuleDisableEmptyAsZero
 	Rule int
 )
 

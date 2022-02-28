@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-03-01
+### Changed
+- Type `Rule` doc comments (all packages).
+
 ## [0.3.0] - 2022-02-28
 ### Added
 - Type `Rule` and `DefaultParser` parameter of same type (all packages).
@@ -44,7 +48,8 @@
 ### Added
 - First release of util.
 
-[Unreleased]: https://github.com/livesport-tv/util/compare/v0.3.0...master
+[Unreleased]: https://github.com/livesport-tv/util/compare/v0.4.0...master
+[0.4.0]: https://github.com/livesport-tv/util/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/livesport-tv/util/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/livesport-tv/util/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/livesport-tv/util/compare/v0.1.0...v0.2.0
