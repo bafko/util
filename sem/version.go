@@ -6,6 +6,10 @@
 // See also: https://semver.org/
 package sem
 
+import (
+	"math/bits"
+)
+
 // Ver represents version consist of major, minor, patch, pre-release and build components.
 // Values major, minor and patch are represented as uint64.
 // Pre-release and build are strings, and they are omitted in string form if empty.
@@ -93,6 +97,57 @@ func (v Ver) Valid() error {
 		return ErrInvalidBuild
 	}
 	return nil
+}
+
+// NextMajor returns new version with incremented major and zero minor and patch.
+// Returned version has empty PreRelease and Build components.
+// It panics if current major is equal to math.MaxUint64.
+func (v Ver) NextMajor() Ver {
+	newMajor, overflow := bits.Add64(v.Major, 1, 0)
+	if overflow != 0 {
+		panic("maximum major version exceeded")
+	}
+	return Ver{
+		Major:      newMajor,
+		Minor:      0,
+		Patch:      0,
+		PreRelease: "",
+		Build:      "",
+	}
+}
+
+// NextMinor returns new version with same major, incremented minor and zero patch.
+// Returned version has empty PreRelease and Build components.
+// It panics if current minor is equal to math.MaxUint64.
+func (v Ver) NextMinor() Ver {
+	newMinor, overflow := bits.Add64(v.Minor, 1, 0)
+	if overflow != 0 {
+		panic("maximum minor version exceeded")
+	}
+	return Ver{
+		Major:      v.Major,
+		Minor:      newMinor,
+		Patch:      0,
+		PreRelease: "",
+		Build:      "",
+	}
+}
+
+// NextPatch returns new version with same major, same minor and incremented patch.
+// Returned version has empty PreRelease and Build components.
+// It panics if current patch is equal to math.MaxUint64.
+func (v Ver) NextPatch() Ver {
+	newPatch, overflow := bits.Add64(v.Patch, 1, 0)
+	if overflow != 0 {
+		panic("maximum patch version exceeded")
+	}
+	return Ver{
+		Major:      v.Major,
+		Minor:      v.Minor,
+		Patch:      newPatch,
+		PreRelease: "",
+		Build:      "",
+	}
 }
 
 // MarshalText converts version to text with Formatter.
