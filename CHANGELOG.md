@@ -4,13 +4,29 @@
 
 ## [0.4.0] - 2022-03-16
 ### Added
+- Package `constraint` with generic support and helpers.
+- Function `size.Bytes` with generic support.
 - Methods `sem.Ver.NextMajor`, `sem.Ver.NextMinor` and `sem.Ver.NextPatch`.
 
 ### Changed
 - Type `Rule` doc comments (all packages).
+- Generic support:
+  - Type `size.InvalidValueError`
+  - Function `size.New`
 - Updated:
   - Go to 1.18
   - `github.com/stretchr/testify` to `1.7.1`
+
+### Removed
+- Methods of `size.Size`:
+  - `BytesInt`
+  - `BytesUint`
+  - `BytesInt32`
+  - `BytesUint32`
+  - `BytesInt64`
+  - `BytesUint64`
+  - `BytesFloat32`
+  - `BytesFloat64`
 
 ## [0.3.0] - 2022-02-28
 ### Added

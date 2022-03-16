@@ -24,18 +24,18 @@ func Test_InvalidUnitError_Error(t *testing.T) {
 }
 
 func Test_newInvalidValueError(t *testing.T) {
-	assert.Equal(t, &InvalidValueError{
+	assert.Equal(t, &InvalidValueError[uint64]{
 		Value: 1,
 		Unit:  Zebibyte,
-	}, newInvalidValueError(1, Zebibyte))
+	}, newInvalidValueError(uint64(1), Zebibyte))
 }
 
 func Test_InvalidValueError_Error(t *testing.T) {
-	assert.Equal(t, `value 1 without unit is not suitable for uint64`, (&InvalidValueError{
+	assert.Equal(t, `value 1 without unit is not suitable for uint64`, (&InvalidValueError[uint64]{
 		Value: 1,
 		Unit:  "",
 	}).Error())
-	assert.Equal(t, `value 1 with unit "ZiB" is not suitable for uint64`, (&InvalidValueError{
+	assert.Equal(t, `value 1 with unit "ZiB" is not suitable for uint64`, (&InvalidValueError[uint64]{
 		Value: 1,
 		Unit:  Zebibyte,
 	}).Error())

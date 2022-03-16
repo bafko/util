@@ -7,6 +7,8 @@ package size
 import (
 	"errors"
 	"fmt"
+
+	"go.lstv.dev/util/constraint"
 )
 
 var (
@@ -79,24 +81,24 @@ func (e *InvalidUnitError) Error() string {
 }
 
 // InvalidValueError represents invalid combination of value and unit.
-type InvalidValueError struct {
-	Value uint64
+type InvalidValueError[N constraint.Numbers] struct {
+	Value N
 	Unit  string
 }
 
-func newInvalidValueError(value uint64, unit string) *InvalidValueError {
-	return &InvalidValueError{
+func newInvalidValueError[N constraint.Numbers](value N, unit string) *InvalidValueError[N] {
+	return &InvalidValueError[N]{
 		Value: value,
 		Unit:  unit,
 	}
 }
 
 // Error returns string representation of error.
-func (e *InvalidValueError) Error() string {
+func (e *InvalidValueError[N]) Error() string {
 	if e.Unit == "" {
-		return fmt.Sprintf("value %d without unit is not suitable for uint64", e.Value)
+		return fmt.Sprintf("value %v without unit is not suitable for uint64", e.Value)
 	}
-	return fmt.Sprintf("value %d with unit %q is not suitable for uint64", e.Value, e.Unit)
+	return fmt.Sprintf("value %v with unit %q is not suitable for uint64", e.Value, e.Unit)
 }
 
 // ParseError represents error during version parsing.
