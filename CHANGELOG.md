@@ -2,12 +2,15 @@
 
 ## [Unreleased]
 
-## [0.4.0] - 2022-03-01
+## [0.4.0] - 2022-03-16
 ### Added
 - Methods `sem.Ver.NextMajor`, `sem.Ver.NextMinor` and `sem.Ver.NextPatch`.
 
 ### Changed
 - Type `Rule` doc comments (all packages).
+- Updated:
+  - Go to 1.18
+  - `github.com/stretchr/testify` to `1.7.1`
 
 ## [0.3.0] - 2022-02-28
 ### Added
