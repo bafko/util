@@ -4,11 +4,15 @@
 
 package roman
 
+import (
+	"go.lstv.dev/util/constraint"
+)
+
 // Valid checks if passed value is valid roman number.
 // If not, error is returned.
 //
 // See also MaxInputLength.
-func Valid(input []byte, r Rule) error {
+func Valid[T constraint.ParserInput](input T, r Rule) error {
 	const funcName = "Valid"
 	empty, err := checkInputLength(funcName, input, r)
 	if err != nil {
@@ -17,8 +21,8 @@ func Valid(input []byte, r Rule) error {
 	if empty {
 		return nil
 	}
-	if !pattern.Match(input) {
-		return newNumberFormatError(funcName, string(input), nil)
+	if !pattern.Match([]byte(input)) {
+		return newNumberFormatError(funcName, input, nil)
 	}
 	return nil
 }

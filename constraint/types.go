@@ -4,6 +4,11 @@
 
 package constraint
 
+// ParserInput represents parser input.
+type ParserInput interface {
+	~[]byte | ~string
+}
+
 // Ints represents all int* types and their derived types.
 type Ints interface {
 	~int | ~int8 | ~int16 | ~int32 | ~int64

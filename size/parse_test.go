@@ -10,6 +10,8 @@ import (
 	"strings"
 	"testing"
 
+	"go.lstv.dev/util/constraint"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -46,24 +48,24 @@ func Test_DefaultParser(t *testing.T) {
 	assertDefaultParser(t, 1000, "1 kB", 0)
 	assertDefaultParserError(t, `size.DefaultParser: parsing "1048576 EiB": value 1048576 with unit "EiB" is not suitable for uint64`, "1048576 EiB", 0)
 
-	testUnmarshalJSON(t, DefaultParser)
+	testUnmarshalJSON[string](t, DefaultParser[string])
 }
 
-func assertUnmarshalJSON(t *testing.T, f func(input []byte, r Rule) (Size, error), expected uint64, input string, r Rule) {
+func assertUnmarshalJSON[T constraint.ParserInput](t *testing.T, f func(input T, r Rule) (Size, error), expected uint64, input string, r Rule) {
 	t.Helper()
-	s, err := f([]byte(input), r)
+	s, err := f(T(input), r)
 	assert.NoErrorf(t, err, "invalid case for input %q", input)
 	assert.Equal(t, Size(expected), s, "invalid case for input %q: expected %d bytes", input, expected)
 }
 
-func assertUnmarshalJSONError(t *testing.T, f func(input []byte, r Rule) (Size, error), error, input string, r Rule) {
+func assertUnmarshalJSONError[T constraint.ParserInput](t *testing.T, f func(input T, r Rule) (Size, error), error, input string, r Rule) {
 	t.Helper()
-	s, err := f([]byte(input), r)
+	s, err := f(T(input), r)
 	assert.EqualErrorf(t, err, error, "invalid case for input %q", input)
 	assert.Zero(t, s, "invalid case for input %q: expected zero", input)
 }
 
-func testUnmarshalJSON(t *testing.T, f func(input []byte, r Rule) (Size, error)) {
+func testUnmarshalJSON[T constraint.ParserInput](t *testing.T, f func(input T, r Rule) (Size, error)) {
 	t.Helper()
 
 	rule := RuleEnableJSONStringForm | RuleEnableJSONObjectForm
@@ -89,7 +91,7 @@ func testUnmarshalJSON(t *testing.T, f func(input []byte, r Rule) (Size, error))
 }
 
 func Test_UnmarshalJSON(t *testing.T) {
-	testUnmarshalJSON(t, unmarshalJSON)
+	testUnmarshalJSON[[]byte](t, unmarshalJSON[[]byte])
 }
 
 type spacePermutation []rune

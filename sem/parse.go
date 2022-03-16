@@ -7,6 +7,8 @@ package sem
 import (
 	"fmt"
 	"strconv"
+
+	"go.lstv.dev/util/constraint"
 )
 
 var (
@@ -16,7 +18,7 @@ var (
 	MaxInputLength = 1024
 
 	// Parser is used by Ver.UnmarshalText function.
-	Parser = DefaultParser
+	Parser = DefaultParser[[]byte]
 )
 
 type (
@@ -35,34 +37,34 @@ const (
 // DefaultParser parse Ver from input.
 //
 // See also MaxInputLength.
-func DefaultParser(input []byte, r Rule) (v Ver, err error) {
+func DefaultParser[T constraint.ParserInput](input T, r Rule) (v Ver, err error) {
 	const funcName = "DefaultParser"
 	f := formVersion
 	if r&RuleDisableTag == 0 {
 		f |= formTag
 	}
-	return unmarshalText(funcName, input, f)
+	return unmarshalText[T](funcName, input, f)
 }
 
 // ParseVersion parses input as version.
 // If input is not valid, error is returned.
-func ParseVersion(input []byte) (Ver, error) {
+func ParseVersion[T constraint.ParserInput](input T) (Ver, error) {
 	const funcName = "ParseVersion"
-	return unmarshalText(funcName, input, formVersion)
+	return unmarshalText[T](funcName, input, formVersion)
 }
 
 // ParseTag parses input as tag.
 // If input is not valid, error is returned.
-func ParseTag(input []byte) (Ver, error) {
+func ParseTag[T constraint.ParserInput](input T) (Ver, error) {
 	const funcName = "ParseTag"
-	return unmarshalText(funcName, input, formTag)
+	return unmarshalText[T](funcName, input, formTag)
 }
 
 // Parse parses input as version or tag.
 // If input is not valid, error is returned.
-func Parse(input []byte) (Ver, error) {
+func Parse[T constraint.ParserInput](input T) (Ver, error) {
 	const funcName = "Parse"
-	return unmarshalText(funcName, input, formVersion|formTag)
+	return unmarshalText[T](funcName, input, formVersion|formTag)
 }
 
 // form defines which formats are allowed to unmarshal.
@@ -77,40 +79,41 @@ const (
 	formTag
 )
 
-func unmarshalText(funcName string, input []byte, f form) (v Ver, err error) {
+func unmarshalText[T constraint.ParserInput](funcName string, input T, f form) (v Ver, err error) {
 	l := len(input)
 	if l == 0 {
-		return Ver{}, newParseError(funcName, "", nil)
+		return Ver{}, newParseError(funcName, input, nil)
 	}
 	if MaxInputLength != 0 && l > MaxInputLength {
 		// do not use input for "input too long" error
-		return Ver{}, newParseError(funcName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
+		var t T
+		return Ver{}, newParseError(funcName, t, fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
 	}
 	if input[0] == tagPrefix {
 		if f&formTag == 0 {
-			return Ver{}, newParseError(funcName, string(input), ErrTagFormNotAllowed)
+			return Ver{}, newParseError(funcName, input, ErrTagFormNotAllowed)
 		}
 		input = input[1:]
 	} else {
 		if f&formVersion == 0 {
-			return Ver{}, newParseError(funcName, string(input), ErrExpectedTagForm)
+			return Ver{}, newParseError(funcName, input, ErrExpectedTagForm)
 		}
 	}
-	parts := pattern.FindSubmatch(input)
+	parts := pattern.FindSubmatch([]byte(input))
 	if len(parts) == 0 {
-		return Ver{}, newParseError(funcName, string(input), nil)
+		return Ver{}, newParseError(funcName, input, nil)
 	}
 	major, err := strconv.ParseUint(string(parts[1]), 10, 64)
 	if err != nil {
-		return Ver{}, newParseError(funcName, string(input), ErrInvalidMajor)
+		return Ver{}, newParseError(funcName, input, ErrInvalidMajor)
 	}
 	minor, err := strconv.ParseUint(string(parts[2]), 10, 64)
 	if err != nil {
-		return Ver{}, newParseError(funcName, string(input), ErrInvalidMinor)
+		return Ver{}, newParseError(funcName, input, ErrInvalidMinor)
 	}
 	patch, err := strconv.ParseUint(string(parts[3]), 10, 64)
 	if err != nil {
-		return Ver{}, newParseError(funcName, string(input), ErrInvalidPatch)
+		return Ver{}, newParseError(funcName, input, ErrInvalidPatch)
 	}
 	return Ver{
 		Major:      major,

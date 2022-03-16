@@ -79,14 +79,14 @@ func Test_DefaultParser(t *testing.T) {
 		// test in, "M"+in, "MM"+in...
 		for i := Number(0); i < 4; i++ {
 			expected := out + (1000 * i)
-			actual, err := DefaultParser([]byte(actualIn), 0)
+			actual, err := DefaultParser(actualIn, 0)
 			assert.NoError(t, err)
 			assert.Equalf(t, expected, actual, "%s should be %d, not %d", actualIn, expected, actual)
 			actualIn = string(thousand) + actualIn
 		}
 	}
 	for _, in := range invalid {
-		i, err := DefaultParser([]byte(in), 0)
+		i, err := DefaultParser(in, 0)
 		assert.Error(t, err)
 		assert.Zero(t, i)
 	}

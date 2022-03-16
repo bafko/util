@@ -11,8 +11,9 @@
 ### Changed
 - Type `Rule` doc comments (all packages).
 - Generic support:
-  - Type `size.InvalidValueError`
+  - Error types.
   - Function `size.New`
+  - All parser functions now accepts `constraint.ParserInput`.
 - Updated:
   - Go to 1.18
   - `github.com/stretchr/testify` to `1.7.1`

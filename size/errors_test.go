@@ -43,7 +43,7 @@ func Test_InvalidValueError_Error(t *testing.T) {
 
 func Test_newParseError(t *testing.T) {
 	err := errors.New("parse error")
-	assert.Equal(t, &ParseError{
+	assert.Equal(t, &ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "1h",
 		Err:   err,
@@ -52,7 +52,7 @@ func Test_newParseError(t *testing.T) {
 
 func Test_ParseError_Unwrap(t *testing.T) {
 	err := errors.New("parse error")
-	assert.Equal(t, err, (&ParseError{
+	assert.Equal(t, err, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "1h",
 		Err:   err,
@@ -61,22 +61,22 @@ func Test_ParseError_Unwrap(t *testing.T) {
 
 func Test_ParseError_Error(t *testing.T) {
 	err := errors.New("parse error")
-	assert.Equal(t, `size.UnmarshalJSON: unable to parse`, (&ParseError{
+	assert.Equal(t, `size.UnmarshalJSON: unable to parse`, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "",
 		Err:   nil,
 	}).Error())
-	assert.Equal(t, `size.UnmarshalJSON: parse error`, (&ParseError{
+	assert.Equal(t, `size.UnmarshalJSON: parse error`, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "",
 		Err:   err,
 	}).Error())
-	assert.Equal(t, `size.UnmarshalJSON: parsing "1h": unable to parse`, (&ParseError{
+	assert.Equal(t, `size.UnmarshalJSON: parsing "1h": unable to parse`, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "1h",
 		Err:   nil,
 	}).Error())
-	assert.Equal(t, `size.UnmarshalJSON: parsing "1h": parse error`, (&ParseError{
+	assert.Equal(t, `size.UnmarshalJSON: parsing "1h": parse error`, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "1h",
 		Err:   err,

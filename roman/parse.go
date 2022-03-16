@@ -6,6 +6,8 @@ package roman
 
 import (
 	"fmt"
+
+	"go.lstv.dev/util/constraint"
 )
 
 var (
@@ -15,7 +17,7 @@ var (
 	MaxInputLength = 128
 
 	// Parser is used by Number.UnmarshalText function.
-	Parser = DefaultParser
+	Parser = DefaultParser[[]byte]
 )
 
 type (
@@ -36,7 +38,7 @@ const (
 // Long and short forms of roman numbers are accepted (e.g. IIII and IV).
 //
 // See also MaxInputLength.
-func DefaultParser(input []byte, r Rule) (Number, error) {
+func DefaultParser[T constraint.ParserInput](input T, r Rule) (Number, error) {
 	const funcName = "DefaultParser"
 	empty, err := checkInputLength(funcName, input, r)
 	if err != nil {
@@ -45,9 +47,10 @@ func DefaultParser(input []byte, r Rule) (Number, error) {
 	if empty {
 		return 0, nil
 	}
-	p := pattern.FindSubmatch(input)
+	b := []byte(input)
+	p := pattern.FindSubmatch(b)
 	if len(p) == 0 {
-		return 0, newNumberFormatError(funcName, string(input), nil)
+		return 0, newNumberFormatError(funcName, input, nil)
 	}
 	decimal := uint64(len(p[1])) * 1000
 	for i, g := range groups {
@@ -77,7 +80,7 @@ func parseGroup(input []byte, unit uint64, digit5, digit10 byte) (decimal uint64
 	return l * unit
 }
 
-func checkInputLength(funcName string, input []byte, r Rule) (empty bool, err error) {
+func checkInputLength[T constraint.ParserInput](funcName string, input T, r Rule) (empty bool, err error) {
 	l := len(input)
 	if l == 0 {
 		if r&RuleDisableEmptyAsZero != 0 {

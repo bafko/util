@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"go.lstv.dev/util/constraint"
 )
 
 const (
@@ -32,7 +34,7 @@ var (
 	MaxObjectKeys = 16
 
 	// Parser is used by Size.UnmarshalText and Size.UnmarshalJSON functions.
-	Parser = DefaultParser
+	Parser = DefaultParser[[]byte]
 )
 
 type (
@@ -82,10 +84,11 @@ var (
 // JSON object keys are case-insensitive.
 //
 // See also MaxInputLength and MaxObjectKeys.
-func DefaultParser(input []byte, r Rule) (Size, error) {
+func DefaultParser[T constraint.ParserInput](input T, r Rule) (Size, error) {
 	if l := len(input); MaxInputLength != 0 && l > MaxInputLength {
 		// do not use input for "input too long" error
-		return 0, newParseError(defaultParserFuncName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
+		var t T
+		return 0, newParseError(defaultParserFuncName, t, fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
 	}
 
 	if r&ruleIsJSON != 0 {
@@ -95,23 +98,23 @@ func DefaultParser(input []byte, r Rule) (Size, error) {
 	return unmarshalText(input, r)
 }
 
-func unmarshalText(input []byte, r Rule) (Size, error) {
+func unmarshalText[T constraint.ParserInput](input T, r Rule) (Size, error) {
 	s := string(input)
 	number, unit := prepareNumber(s)
 
 	if number == "" {
-		return 0, newParseError(defaultParserFuncName, s, nil)
+		return 0, newParseError(defaultParserFuncName, input, nil)
 	}
 	value, err := strconv.ParseUint(number, 10, 64)
 	if err != nil {
-		return 0, newParseError(defaultParserFuncName, s, err)
+		return 0, newParseError(defaultParserFuncName, input, err)
 	}
 
 	if unit == "" {
 		return Size(value), nil
 	}
 	if r&RuleDisableUnit != 0 {
-		return 0, newParseError(defaultParserFuncName, s, ErrUnitDisabled)
+		return 0, newParseError(defaultParserFuncName, input, ErrUnitDisabled)
 	}
 
 	size, err := New(value, unit)
@@ -121,35 +124,35 @@ func unmarshalText(input []byte, r Rule) (Size, error) {
 	return size, nil
 }
 
-func unmarshalJSON(input []byte, r Rule) (Size, error) {
-	d := json.NewDecoder(bytes.NewReader(input))
+func unmarshalJSON[T constraint.ParserInput](input T, r Rule) (Size, error) {
+	d := json.NewDecoder(bytes.NewReader([]byte(input)))
 	d.UseNumber()
 	t, err := d.Token()
 	if err != nil {
-		return 0, newParseError(defaultParserFuncName, string(input), err)
+		return 0, newParseError(defaultParserFuncName, input, err)
 	}
 	switch v := t.(type) {
 	case json.Delim:
 		if v != '{' {
-			return 0, newParseError(defaultParserFuncName, string(input), ErrExpectedObject)
+			return 0, newParseError(defaultParserFuncName, input, ErrExpectedObject)
 		}
 		if r&RuleEnableJSONObjectForm == 0 {
-			return 0, newParseError(defaultParserFuncName, string(input), ErrObjectFormDisabled)
+			return 0, newParseError(defaultParserFuncName, input, ErrObjectFormDisabled)
 		}
 		size, err := unmarshalJSONObject(d, r)
 		if err != nil {
-			return 0, newParseError(defaultParserFuncName, string(input), err)
+			return 0, newParseError(defaultParserFuncName, input, err)
 		}
 		return size, nil
 	case json.Number:
 		return unmarshalText([]byte(v), 0)
 	case string:
 		if r&RuleEnableJSONStringForm == 0 {
-			return 0, newParseError(defaultParserFuncName, string(input), ErrStringFormDisabled)
+			return 0, newParseError(defaultParserFuncName, input, ErrStringFormDisabled)
 		}
 		return unmarshalText([]byte(v), 0)
 	default:
-		return 0, newParseError(defaultParserFuncName, string(input), fmt.Errorf("%w: expected json.Delim, json.Number or string instead of %T", ErrInvalidType, t))
+		return 0, newParseError(defaultParserFuncName, input, fmt.Errorf("%w: expected json.Delim, json.Number or string instead of %T", ErrInvalidType, t))
 	}
 }
 

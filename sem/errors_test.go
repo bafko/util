@@ -13,7 +13,7 @@ import (
 
 func Test_newParseError(t *testing.T) {
 	err := errors.New("parse error")
-	assert.Equal(t, &ParseError{
+	assert.Equal(t, &ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "1h",
 		Err:   err,
@@ -22,7 +22,7 @@ func Test_newParseError(t *testing.T) {
 
 func Test_ParseError_Unwrap(t *testing.T) {
 	err := errors.New("parse error")
-	assert.Equal(t, err, (&ParseError{
+	assert.Equal(t, err, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "1h",
 		Err:   err,
@@ -31,22 +31,22 @@ func Test_ParseError_Unwrap(t *testing.T) {
 
 func Test_ParseError_Error(t *testing.T) {
 	err := errors.New("parse error")
-	assert.Equal(t, `sem.UnmarshalJSON: invalid version`, (&ParseError{
+	assert.Equal(t, `sem.UnmarshalJSON: invalid version`, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "",
 		Err:   nil,
 	}).Error())
-	assert.Equal(t, `sem.UnmarshalJSON: parse error`, (&ParseError{
+	assert.Equal(t, `sem.UnmarshalJSON: parse error`, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "",
 		Err:   err,
 	}).Error())
-	assert.Equal(t, `sem.UnmarshalJSON: "1h": invalid version`, (&ParseError{
+	assert.Equal(t, `sem.UnmarshalJSON: "1h": invalid version`, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "1h",
 		Err:   nil,
 	}).Error())
-	assert.Equal(t, `sem.UnmarshalJSON: "1h": parse error`, (&ParseError{
+	assert.Equal(t, `sem.UnmarshalJSON: "1h": parse error`, (&ParseError[string]{
 		Func:  "UnmarshalJSON",
 		Input: "1h",
 		Err:   err,
