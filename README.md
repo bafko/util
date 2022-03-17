@@ -1,5 +1,6 @@
 # Livesport TV Utils
 
+[![Go Reference](https://pkg.go.dev/badge/go.lstv.dev/util.svg)](https://pkg.go.dev/go.lstv.dev/util)
 [![License: MIT](https://img.shields.io/github/license/livesport-tv/util)](https://opensource.org/licenses/MIT)
 [![tests](https://github.com/livesport-tv/util/actions/workflows/tests.yml/badge.svg)](https://github.com/livesport-tv/util/actions/workflows/tests.yml)
 [![Latest release](https://img.shields.io/github/v/release/livesport-tv/util?display_name=tag&sort=semver)](https://github.com/livesport-tv/util/releases)
