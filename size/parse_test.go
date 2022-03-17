@@ -197,10 +197,10 @@ var (
 )
 
 type decoderMock struct {
-	queue []interface{} // json.Token or error
+	queue []any // json.Token or error
 }
 
-func newDecoderMock(tokensOrErrors ...interface{}) *decoderMock {
+func newDecoderMock(tokensOrErrors ...any) *decoderMock {
 	return &decoderMock{
 		queue: tokensOrErrors,
 	}

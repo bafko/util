@@ -10,6 +10,7 @@
 
 ### Changed
 - Type `Rule` doc comments (all packages).
+- Used `any` instead of `interface{}`.
 - Generic support:
   - Error types.
   - Function `size.New`
