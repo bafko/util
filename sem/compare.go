@@ -6,44 +6,48 @@ package sem
 
 import (
 	"strings"
+
+	"go.lstv.dev/util/constraint"
 )
 
 var (
 	// ComparePreRelease is used as part of Ver.Compare.
 	// If major, minor and patch of compared versions are the same, ComparePreRelease is used.
-	ComparePreRelease = DefaultComparePreRelease
+	ComparePreRelease = DefaultComparePreRelease[string, string]
 )
 
 // DefaultComparePreRelease implements https://semver.org/#spec-item-11 rules.
-func DefaultComparePreRelease(a, b string) int {
-	if a == "" {
-		if b == "" {
+func DefaultComparePreRelease[T1, T2 constraint.ParserInput](a T1, b T2) int {
+	la, lb := len(a), len(b)
+	if la == 0 {
+		if lb == 0 {
 			return 0
 		}
 		return 1
-	} else if b == "" {
+	} else if lb == 0 {
 		return -1
 	}
-	if len(a) > len(b) {
+	if la > lb {
 		return comparePreRelease(b, a)
 	}
 	return -comparePreRelease(a, b)
 }
 
-func comparePreRelease(shorter, longer string) int {
-	longerRunes := []rune(longer)
-	for i, sr := range shorter {
+func comparePreRelease[T1, T2 constraint.ParserInput](shorter T1, longer T2) int {
+	s, l := string(shorter), string(longer)
+	longerRunes := []rune(l)
+	for i, sr := range s {
 		if lr := longerRunes[i]; sr != lr {
-			return comparePreReleaseSuffix(shorter[i:], longer[i:])
+			return comparePreReleaseSuffix(s[i:], l[i:])
 		}
 	}
-	if len(shorter) == len(longer) {
+	if len(s) == len(l) {
 		return 0
 	}
 	return 1
 }
 
-func comparePreReleaseSuffix(shorter, longer string) int {
+func comparePreReleaseSuffix(shorter string, longer string) int {
 	if digitsOrEmpty.MatchString(shorter) && digitsOrEmpty.MatchString(longer) {
 		shorter = strings.TrimLeft(shorter, "0")
 		longer = strings.TrimLeft(longer, "0")
@@ -53,12 +57,12 @@ func comparePreReleaseSuffix(shorter, longer string) int {
 
 // CompareVersion compares passed versions.
 // Error is returned if passed versions are not valid.
-func CompareVersion(a, b string) (int, error) {
-	av, err := ParseVersion([]byte(a))
+func CompareVersion[T1, T2 constraint.ParserInput](a, b string) (int, error) {
+	av, err := ParseVersion(a)
 	if err != nil {
 		return 0, err
 	}
-	bv, err := ParseVersion([]byte(b))
+	bv, err := ParseVersion(b)
 	if err != nil {
 		return 0, err
 	}
@@ -67,12 +71,12 @@ func CompareVersion(a, b string) (int, error) {
 
 // CompareTag compares passed tag versions.
 // Error is returned if passed tag versions are not valid.
-func CompareTag(a, b string) (int, error) {
-	av, err := ParseTag([]byte(a))
+func CompareTag[T1, T2 constraint.ParserInput](a T1, b T2) (int, error) {
+	av, err := ParseTag(a)
 	if err != nil {
 		return 0, err
 	}
-	bv, err := ParseTag([]byte(b))
+	bv, err := ParseTag(b)
 	if err != nil {
 		return 0, err
 	}
@@ -81,12 +85,12 @@ func CompareTag(a, b string) (int, error) {
 
 // Compare compares passed tag versions or versions.
 // Error is returned if passed tag versions or versions are not valid.
-func Compare(a, b string) (int, error) {
-	av, err := Parse([]byte(a))
+func Compare[T1, T2 constraint.ParserInput](a T1, b T2) (int, error) {
+	av, err := Parse(a)
 	if err != nil {
 		return 0, err
 	}
-	bv, err := Parse([]byte(b))
+	bv, err := Parse(b)
 	if err != nil {
 		return 0, err
 	}

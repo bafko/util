@@ -8,9 +8,12 @@ package size
 import (
 	"encoding/json"
 	"html/template"
-	"math"
 	"math/bits"
+	"reflect"
 	"strconv"
+
+	"go.lstv.dev/util/constraint"
+	"go.lstv.dev/util/internal"
 )
 
 var (
@@ -29,12 +32,15 @@ var (
 type Size uint64
 
 // New creates new Size value with specified unit.
-func New(value uint64, unit string) (Size, error) {
+func New[N constraint.Numbers](value N, unit string) (Size, error) {
 	if value == 0 {
 		if _, ok := zeroUnits[unit]; !ok {
 			return 0, newInvalidUnitError(unit)
 		}
 		return 0, nil
+	}
+	if value < 0 || N(uint64(value)) != value {
+		return 0, newInvalidValueError(value, unit)
 	}
 	if unit == "" {
 		return Size(value), nil
@@ -43,7 +49,7 @@ func New(value uint64, unit string) (Size, error) {
 	if !ok {
 		return 0, newInvalidUnitError(unit)
 	}
-	hi, lo := bits.Mul64(value, n)
+	hi, lo := bits.Mul64(uint64(value), n)
 	if hi != 0 {
 		return 0, newInvalidValueError(value, unit)
 	}
@@ -77,79 +83,6 @@ func (s Size) BytesJSONNumber() json.Number {
 // BytesString returns size as string in bytes.
 func (s Size) BytesString() string {
 	return strconv.FormatUint(uint64(s), 10)
-}
-
-// BytesInt returns size value in bytes as int data type.
-// Returned ok is true if size value in bytes is suitable for int data type.
-func (s Size) BytesInt() (value int, ok bool) {
-	if s > math.MaxInt {
-		return 0, false
-	}
-	return int(s), true
-}
-
-var maxUint = Size(math.MaxUint)
-
-// BytesUint returns size value in bytes as uint data type.
-// Returned ok is true if size value in bytes is suitable for uint data type.
-func (s Size) BytesUint() (value uint, ok bool) {
-	if s > maxUint {
-		return 0, false
-	}
-	return uint(s), true
-}
-
-// BytesInt32 returns size value in bytes as int32 data type.
-// Returned ok is true if size value in bytes is suitable for int32 data type.
-func (s Size) BytesInt32() (value int32, ok bool) {
-	if s > math.MaxInt32 {
-		return 0, false
-	}
-	return int32(s), true
-}
-
-// BytesUint32 returns size value in bytes as uint32 data type.
-// Returned ok is true if size value in bytes is suitable for uint32 data type.
-func (s Size) BytesUint32() (value uint32, ok bool) {
-	if s > math.MaxUint32 {
-		return 0, false
-	}
-	return uint32(s), true
-}
-
-// BytesInt64 returns size value in bytes as int64 data type.
-// Returned ok is true if size value in bytes is suitable for int64 data type.
-func (s Size) BytesInt64() (value int64, ok bool) {
-	if s > math.MaxInt64 {
-		return 0, false
-	}
-	return int64(s), true
-}
-
-// BytesUint64 returns size value in bytes as uint64 data type.
-// Returned ok is true if size value in bytes is suitable for uint64 data type.
-func (s Size) BytesUint64() (value uint64, ok bool) {
-	return uint64(s), true
-}
-
-// BytesFloat32 returns size value in bytes as float32 data type.
-// Returned ok is true if size value in bytes is suitable for float32 data type without lost precision.
-func (s Size) BytesFloat32() (value float32, ok bool) {
-	f := float32(s)
-	if Size(f) != s {
-		return 0, false
-	}
-	return f, true
-}
-
-// BytesFloat64 returns size value in bytes as float64 data type.
-// Returned ok is true if size value in bytes is suitable for float64 data type without lost precision.
-func (s Size) BytesFloat64() (value float64, ok bool) {
-	f := float64(s)
-	if Size(f) != s {
-		return 0, false
-	}
-	return f, true
 }
 
 // MarshalText converts size to text.
@@ -255,6 +188,23 @@ func (s Size) String() string {
 		return strconv.FormatUint(uint64(s), 10)
 	}
 	return string(b)
+}
+
+// Bytes returns size value in bytes as specified data type.
+// Returned ok is true if size value in bytes is suitable for specified data type.
+func Bytes[N constraint.Numbers](s Size) (value N, ok bool) {
+	switch k := internal.Kind(N(0)); k {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		if uint64(s) <= uint64(internal.Max[N](k)) {
+			return N(s), true
+		}
+	case reflect.Float32, reflect.Float64:
+		if uint64(s) == uint64(N(s)) {
+			return N(s), true
+		}
+	}
+	return 0, false
 }
 
 func (s Size) marshalJSONObject() []byte {

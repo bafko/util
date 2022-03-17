@@ -7,6 +7,8 @@ package sem
 import (
 	"errors"
 	"fmt"
+
+	"go.lstv.dev/util/constraint"
 )
 
 var (
@@ -43,14 +45,14 @@ var (
 
 // ParseError represents error during version parsing.
 // Input can be empty, as same as Err.
-type ParseError struct {
+type ParseError[T constraint.ParserInput] struct {
 	Func  string
-	Input string
+	Input T
 	Err   error
 }
 
-func newParseError(funcName, input string, err error) *ParseError {
-	return &ParseError{
+func newParseError[T constraint.ParserInput](funcName string, input T, err error) *ParseError[T] {
+	return &ParseError[T]{
 		Func:  funcName,
 		Input: input,
 		Err:   err,
@@ -58,17 +60,17 @@ func newParseError(funcName, input string, err error) *ParseError {
 }
 
 // Unwrap returns under-laying error if any.
-func (e *ParseError) Unwrap() error {
+func (e *ParseError[T]) Unwrap() error {
 	return e.Err
 }
 
 // Error returns string representation of error.
-func (e *ParseError) Error() string {
+func (e *ParseError[T]) Error() string {
 	err := "invalid version"
 	if e.Err != nil {
 		err = e.Err.Error()
 	}
-	if e.Input == "" {
+	if len(e.Input) == 0 {
 		return fmt.Sprintf("sem.%s: %s", e.Func, err)
 	}
 	return fmt.Sprintf("sem.%s: %q: %s", e.Func, e.Input, err)

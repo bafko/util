@@ -217,7 +217,7 @@ func (d *Date) UnmarshalText(data []byte) error {
 
 // Scan is support for database/sql package.
 // It can return wrapped ErrInvalidType.
-func (d *Date) Scan(src interface{}) error {
+func (d *Date) Scan(src any) error {
 	if t, ok := src.(time.Time); ok {
 		d.FromTime(t)
 		return nil

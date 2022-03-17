@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+
+	"go.lstv.dev/util/constraint"
 )
 
 var (
@@ -18,13 +20,15 @@ var (
 	MaxInputLength = 10
 
 	// Parser is used by Date.UnmarshalText function.
-	Parser = DefaultParser
+	Parser = DefaultParser[[]byte]
 
 	pattern = regexp.MustCompile(`^([0-9]{4,9})-?(1[0-2]|0[0-9])-?(3[01]|[0-2][0-9])$`)
 )
 
 type (
 	// Rule allows configuring Parser behavior.
+	// Available rules are:
+	//   RuleDisableBasic
 	Rule int
 )
 
@@ -36,26 +40,28 @@ const (
 // DefaultParser parse Date from input.
 //
 // See also MaxInputLength.
-func DefaultParser(input []byte, r Rule) (date Date, err error) {
+func DefaultParser[T constraint.ParserInput](input T, r Rule) (date Date, err error) {
 	const funcName = "DefaultParser"
-	l := len(input)
+	b := []byte(input)
+	l := len(b)
 	if l == 0 {
-		return Date{}, newParseError(funcName, "", nil)
+		return Date{}, newParseError(funcName, b, nil)
 	}
 	if MaxInputLength != 0 && l > MaxInputLength {
 		// do not use input for "input too long" error
-		return Date{}, newParseError(funcName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
+		var t T
+		return Date{}, newParseError(funcName, t, fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
 	}
-	parts := pattern.FindSubmatch(input)
+	parts := pattern.FindSubmatch(b)
 	if len(parts) == 0 {
-		return Date{}, newParseError(funcName, string(input), nil)
+		return Date{}, newParseError(funcName, input, nil)
 	}
-	if sep2 := input[l-3] == '-'; sep2 || input[l-5] == '-' { // extended format
-		if !sep2 || input[l-6] != '-' { // disallow YYYY-MMDD and YYYYMM-YY formats
-			return Date{}, newParseError(funcName, string(input), nil)
+	if sep2 := b[l-3] == '-'; sep2 || b[l-5] == '-' { // extended format
+		if !sep2 || b[l-6] != '-' { // disallow YYYY-MMDD and YYYYMM-YY formats
+			return Date{}, newParseError(funcName, input, nil)
 		}
 	} else if r&RuleDisableBasic != 0 {
-		return Date{}, newParseError(funcName, string(input), ErrBasicFormatDisabled)
+		return Date{}, newParseError(funcName, input, ErrBasicFormatDisabled)
 	}
 	year, _ := strconv.Atoi(string(parts[1]))
 	month, _ := strconv.Atoi(string(parts[2]))

@@ -4,14 +4,18 @@
 
 package sem
 
+import (
+	"go.lstv.dev/util/constraint"
+)
+
 // LatestVersion returns the latest version from passed ones.
 // If a or b is not valid version, error is returned.
-func LatestVersion(a, b string) (Ver, error) {
-	av, err := ParseVersion([]byte(a))
+func LatestVersion[T1, T2 constraint.ParserInput](a T1, b T2) (Ver, error) {
+	av, err := ParseVersion(a)
 	if err != nil {
 		return Ver{}, err
 	}
-	bv, err := ParseVersion([]byte(b))
+	bv, err := ParseVersion(b)
 	if err != nil {
 		return Ver{}, err
 	}
@@ -20,12 +24,12 @@ func LatestVersion(a, b string) (Ver, error) {
 
 // LatestTag returns the latest tag from passed ones.
 // If a or b is not valid tag, error is returned.
-func LatestTag(a, b string) (Ver, error) {
-	av, err := ParseTag([]byte(a))
+func LatestTag[T1, T2 constraint.ParserInput](a T1, b T2) (Ver, error) {
+	av, err := ParseTag(a)
 	if err != nil {
 		return Ver{}, err
 	}
-	bv, err := ParseTag([]byte(b))
+	bv, err := ParseTag(b)
 	if err != nil {
 		return Ver{}, err
 	}
@@ -34,12 +38,12 @@ func LatestTag(a, b string) (Ver, error) {
 
 // Latest returns the latest version from passed ones.
 // If a or b is not valid version or tag, error is returned.
-func Latest(a, b string) (Ver, error) {
-	av, err := Parse([]byte(a))
+func Latest[T1, T2 constraint.ParserInput](a T1, b T2) (Ver, error) {
+	av, err := Parse(a)
 	if err != nil {
 		return Ver{}, err
 	}
-	bv, err := Parse([]byte(b))
+	bv, err := Parse(b)
 	if err != nil {
 		return Ver{}, err
 	}

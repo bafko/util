@@ -7,6 +7,8 @@ package roman
 import (
 	"errors"
 	"fmt"
+
+	"go.lstv.dev/util/constraint"
 )
 
 var (
@@ -17,14 +19,14 @@ var (
 
 // NumberFormatError represents error during number parsing.
 // Input can be empty, as same as Err.
-type NumberFormatError struct {
+type NumberFormatError[T constraint.ParserInput] struct {
 	Func  string
-	Input string
+	Input T
 	Err   error
 }
 
-func newNumberFormatError(funcName, input string, err error) *NumberFormatError {
-	return &NumberFormatError{
+func newNumberFormatError[T constraint.ParserInput](funcName string, input T, err error) *NumberFormatError[T] {
+	return &NumberFormatError[T]{
 		Func:  funcName,
 		Input: input,
 		Err:   err,
@@ -32,17 +34,17 @@ func newNumberFormatError(funcName, input string, err error) *NumberFormatError 
 }
 
 // Unwrap returns under-laying error if any.
-func (e *NumberFormatError) Unwrap() error {
+func (e *NumberFormatError[T]) Unwrap() error {
 	return e.Err
 }
 
 // Error returns string representation of error.
-func (e *NumberFormatError) Error() string {
+func (e *NumberFormatError[T]) Error() string {
 	err := "invalid roman number"
 	if e.Err != nil {
 		err = e.Err.Error()
 	}
-	if e.Input == "" {
+	if len(e.Input) == 0 {
 		return fmt.Sprintf("roman.%s: %s", e.Func, err)
 	}
 	return fmt.Sprintf("roman.%s: %q: %s", e.Func, e.Input, err)

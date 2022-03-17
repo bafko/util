@@ -7,6 +7,8 @@ package sem
 import (
 	"testing"
 
+	"go.lstv.dev/util/constraint"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -50,10 +52,10 @@ func Test_DefaultParser(t *testing.T) {
 }
 
 func Test_ParseVersion(t *testing.T) {
-	testParseVersion(t, ParseVersion)
+	testParseVersion(t, ParseVersion[string])
 }
 
-func testParseVersion(t *testing.T, f func([]byte) (Ver, error)) {
+func testParseVersion[T constraint.ParserInput](t *testing.T, f func(T) (Ver, error)) {
 	t.Helper()
 	valid := map[string]Ver{
 		"0.0.0": {
@@ -92,22 +94,22 @@ func testParseVersion(t *testing.T, f func([]byte) (Ver, error)) {
 		"1.0.0.0",
 	}
 	for in, out := range valid {
-		v, err := f([]byte(in))
+		v, err := f(T(in))
 		assert.Equal(t, out, v)
 		assert.NoError(t, err)
 	}
 	for _, in := range invalid {
-		v, err := f([]byte(in))
+		v, err := f(T(in))
 		assert.Empty(t, v)
 		assert.Error(t, err)
 	}
 }
 
 func Test_ParseTag(t *testing.T) {
-	testParseTag(t, ParseTag)
+	testParseTag(t, ParseTag[string])
 }
 
-func testParseTag(t *testing.T, f func([]byte) (Ver, error)) {
+func testParseTag[T constraint.ParserInput](t *testing.T, f func(T) (Ver, error)) {
 	t.Helper()
 	valid := map[string]Ver{
 		"v0.0.0": {
@@ -129,20 +131,20 @@ func testParseTag(t *testing.T, f func([]byte) (Ver, error)) {
 		"x",
 	}
 	for in, out := range valid {
-		v, err := f([]byte(in))
+		v, err := f(T(in))
 		assert.Equal(t, out, v)
 		assert.NoError(t, err)
 	}
 	for _, in := range invalid {
-		v, err := f([]byte(in))
+		v, err := f(T(in))
 		assert.Empty(t, v)
 		assert.Error(t, err)
 	}
 }
 
 func Test_Parse(t *testing.T) {
-	testParseVersion(t, Parse)
-	testParseTag(t, Parse)
+	testParseVersion(t, Parse[string])
+	testParseTag(t, Parse[string])
 }
 
 func assertUnmarshalText(t *testing.T, expected Ver, input string, f form) {

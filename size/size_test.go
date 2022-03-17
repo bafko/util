@@ -11,25 +11,28 @@ import (
 	"math"
 	"testing"
 
+	"go.lstv.dev/util/constraint"
+
 	"github.com/stretchr/testify/assert"
 )
 
-func assertNew(t *testing.T, expected Size, value uint64, unit string) {
+func assertNew[N constraint.Numbers](t *testing.T, expected Size, value N, unit string) {
 	t.Helper()
-	actual, err := New(value, unit)
+	actual, err := New[N](value, unit)
 	assert.Equal(t, expected, actual)
 	assert.NoError(t, err)
 }
 
-func assertNewFail(t *testing.T, error string, value uint64, unit string) {
+func assertNewFail[N constraint.Numbers](t *testing.T, error string, value N, unit string) {
 	t.Helper()
-	actual, err := New(value, unit)
+	actual, err := New[N](value, unit)
 	assert.Zero(t, actual)
 	assert.EqualError(t, err, error)
 }
 
 func Test_New(t *testing.T) {
 	assertNew(t, 0, 0, "")
+
 	assertNewFail(t, `invalid unit "h"`, 0, "h")
 	assertNew(t, 1, 1, "")
 	assertNewFail(t, `invalid unit "h"`, 1, "h")
@@ -37,8 +40,16 @@ func Test_New(t *testing.T) {
 	assertNewFail(t, `invalid unit "YiB"`, 1, Yobibyte)
 	assertNewFail(t, `invalid unit "ZB"`, 1, Zettabyte)
 	assertNewFail(t, `invalid unit "ZiB"`, 1, Zebibyte)
-	assertNewFail(t, `value 18446744073709551615 with unit "EiB" is not suitable for uint64`, math.MaxUint64, Exbibyte)
+	assertNewFail(t, `value 18446744073709551615 with unit "EiB" is not suitable for uint64`, uint64(math.MaxUint64), Exbibyte)
 	assertNew(t, 1024*1024, 1, Mebibyte)
+
+	assertNew(t, 10000000, int(10000000), "")
+	assertNew(t, 0, float32(0), "")
+	assertNew(t, 0, float64(0), "")
+	assertNew(t, 15, float64(15), "")
+	assertNewFail(t, `value -1 without unit is not suitable for uint64`, int(-1), "")
+	assertNewFail(t, `value 1.8446744073709552e+21 without unit is not suitable for uint64`, float64(math.MaxUint64)*100, "")
+	assertNewFail(t, `value 0.3 without unit is not suitable for uint64`, float64(0.3), "")
 }
 
 func Test_Size_Shorten(t *testing.T) {
@@ -111,80 +122,6 @@ func Test_Size_BytesJSONNumber(t *testing.T) {
 
 func Test_Size_BytesString(t *testing.T) {
 	assert.Equal(t, `10`, Size(10).BytesString())
-}
-
-func Test_Size_BytesInt(t *testing.T) {
-	value, ok := Size(10).BytesInt()
-	assert.Equal(t, int(10), value)
-	assert.True(t, ok)
-	value, ok = Size(math.MaxUint64).BytesInt()
-	assert.Zero(t, value)
-	assert.False(t, ok)
-}
-
-func Test_Size_BytesUint(t *testing.T) {
-	// let's simulate 32bit uint
-	maxUint = math.MaxUint32
-	value, ok := Size(10).BytesUint()
-	assert.Equal(t, uint(10), value)
-	assert.True(t, ok)
-	value, ok = Size(math.MaxUint64).BytesUint()
-	assert.Zero(t, value)
-	assert.False(t, ok)
-}
-
-func Test_Size_BytesInt32(t *testing.T) {
-	value, ok := Size(10).BytesInt32()
-	assert.Equal(t, int32(10), value)
-	assert.True(t, ok)
-	value, ok = Size(math.MaxUint64).BytesInt32()
-	assert.Zero(t, value)
-	assert.False(t, ok)
-}
-
-func Test_Size_BytesUint32(t *testing.T) {
-	value, ok := Size(10).BytesUint32()
-	assert.Equal(t, uint32(10), value)
-	assert.True(t, ok)
-	value, ok = Size(math.MaxUint64).BytesUint32()
-	assert.Zero(t, value)
-	assert.False(t, ok)
-}
-
-func Test_Size_BytesInt64(t *testing.T) {
-	value, ok := Size(10).BytesInt64()
-	assert.Equal(t, int64(10), value)
-	assert.True(t, ok)
-	value, ok = Size(math.MaxUint64).BytesInt64()
-	assert.Zero(t, value)
-	assert.False(t, ok)
-}
-
-func Test_Size_BytesUint64(t *testing.T) {
-	value, ok := Size(10).BytesUint64()
-	assert.Equal(t, uint64(10), value)
-	assert.True(t, ok)
-	value, ok = Size(math.MaxUint64).BytesUint64()
-	assert.Equal(t, uint64(math.MaxUint64), value)
-	assert.True(t, ok)
-}
-
-func Test_Size_BytesFloat32(t *testing.T) {
-	value, ok := Size(10).BytesFloat32()
-	assert.Equal(t, float32(10), value)
-	assert.True(t, ok)
-	value, ok = Size(math.MaxUint64).BytesFloat32()
-	assert.Zero(t, value)
-	assert.False(t, ok)
-}
-
-func Test_Size_BytesFloat64(t *testing.T) {
-	value, ok := Size(10).BytesFloat64()
-	assert.Equal(t, float64(10), value)
-	assert.True(t, ok)
-	value, ok = Size(math.MaxUint64).BytesFloat64()
-	assert.Zero(t, value)
-	assert.False(t, ok)
 }
 
 func Test_Size_MarshalText(t *testing.T) {
@@ -357,4 +294,42 @@ func Test_Size_String(t *testing.T) {
 
 func Test_Size_marshalJSONObject(t *testing.T) {
 	assert.Equal(t, []byte(`{"value":1,"unit":"KiB"}`), Size(1024).marshalJSONObject())
+}
+
+func assertBytes[N constraint.Numbers](t *testing.T, expected N, size Size) {
+	t.Helper()
+	actual, ok := Bytes[N](size)
+	assert.Equal(t, expected, actual)
+	assert.True(t, ok)
+}
+
+func assertBytesFail[N constraint.Numbers](t *testing.T, size Size) {
+	t.Helper()
+	actual, ok := Bytes[N](size)
+	assert.Zero(t, actual)
+	assert.False(t, ok)
+}
+
+func Test_Bytes(t *testing.T) {
+	assertBytes[int](t, 0, 0)
+	assertBytes[int8](t, 0, 0)
+	assertBytes[int16](t, 0, 0)
+	assertBytes[int32](t, 0, 0)
+	assertBytes[int64](t, 0, 0)
+	assertBytes[uint](t, 0, 0)
+	assertBytes[uint8](t, 0, 0)
+	assertBytes[uint16](t, 0, 0)
+	assertBytes[uint32](t, 0, 0)
+	assertBytes[uint64](t, 0, 0)
+	assertBytes[float32](t, 0, 0)
+	assertBytes[float64](t, 0, 0)
+	assertBytesFail[int8](t, math.MaxInt8+1)
+	assertBytesFail[int16](t, math.MaxInt16+1)
+	assertBytesFail[int32](t, math.MaxInt32+1)
+	assertBytesFail[int64](t, math.MaxInt64+1)
+	assertBytesFail[uint8](t, math.MaxUint8+1)
+	assertBytesFail[uint16](t, math.MaxUint16+1)
+	assertBytesFail[uint32](t, math.MaxUint32+1)
+	assertBytesFail[float32](t, math.MaxUint64)
+	assertBytesFail[float64](t, math.MaxUint64)
 }

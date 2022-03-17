@@ -11,7 +11,7 @@ import (
 
 // Bprintf formats according to a format specifier and append it to passed buffer.
 // It returns passed buffer with added text.
-func Bprintf(buf []byte, format string, a ...interface{}) []byte {
+func Bprintf(buf []byte, format string, a ...any) []byte {
 	b := bytes.NewBuffer(buf)
 	// fmt.Fprintf calls b.Write, which never returns error
 	fmt.Fprintf(b, format, a...)

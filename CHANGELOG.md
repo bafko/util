@@ -2,6 +2,34 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2022-03-16
+### Added
+- Package `constraint` with generic support and helpers.
+- Function `size.Bytes` with generic support.
+- Methods `sem.Ver.NextMajor`, `sem.Ver.NextMinor` and `sem.Ver.NextPatch`.
+
+### Changed
+- Type `Rule` doc comments (all packages).
+- Used `any` instead of `interface{}`.
+- Generic support:
+  - Error types.
+  - Function `size.New`
+  - All parser functions now accepts `constraint.ParserInput`.
+- Updated:
+  - Go to 1.18
+  - `github.com/stretchr/testify` to `1.7.1`
+
+### Removed
+- Methods of `size.Size`:
+  - `BytesInt`
+  - `BytesUint`
+  - `BytesInt32`
+  - `BytesUint32`
+  - `BytesInt64`
+  - `BytesUint64`
+  - `BytesFloat32`
+  - `BytesFloat64`
+
 ## [0.3.0] - 2022-02-28
 ### Added
 - Type `Rule` and `DefaultParser` parameter of same type (all packages).
@@ -44,7 +72,8 @@
 ### Added
 - First release of util.
 
-[Unreleased]: https://github.com/livesport-tv/util/compare/v0.3.0...master
+[Unreleased]: https://github.com/livesport-tv/util/compare/v0.4.0...master
+[0.4.0]: https://github.com/livesport-tv/util/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/livesport-tv/util/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/livesport-tv/util/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/livesport-tv/util/compare/v0.1.0...v0.2.0

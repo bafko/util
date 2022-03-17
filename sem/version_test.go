@@ -6,6 +6,7 @@ package sem
 
 import (
 	"errors"
+	"math"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -46,7 +47,7 @@ func Test_New(t *testing.T) {
 	})
 }
 
-func Test_Version_Compare(t *testing.T) {
+func Test_Ver_Compare(t *testing.T) {
 	a := Ver{}
 	b := Ver{}
 	assert.Equal(t, 0, a.Compare(b))
@@ -194,7 +195,7 @@ func Test_Version_Compare(t *testing.T) {
 	assert.Equal(t, 1, b.Compare(a))
 }
 
-func Test_Version_Latest(t *testing.T) {
+func Test_Ver_Latest(t *testing.T) {
 	a := Ver{}
 	b := Ver{}
 	assert.Equal(t, a, a.Latest(b))
@@ -320,7 +321,7 @@ func Test_Version_Latest(t *testing.T) {
 	assert.Equal(t, b, a.Latest(b))
 }
 
-func Test_Version_Valid(t *testing.T) {
+func Test_Ver_Valid(t *testing.T) {
 	v := Ver{}
 	assert.NoError(t, v.Valid())
 	v.PreRelease = "abcd"
@@ -341,7 +342,121 @@ func Test_Version_Valid(t *testing.T) {
 	assert.Error(t, v.Valid())
 }
 
-func Test_Version_MarshalText(t *testing.T) {
+func Test_Ver_NextMajor(t *testing.T) {
+	assert.Equal(t, Ver{
+		Major:      1,
+		Minor:      0,
+		Patch:      0,
+		PreRelease: "",
+		Build:      "",
+	}, Ver{
+		Major:      0,
+		Minor:      1,
+		Patch:      2,
+		PreRelease: "a",
+		Build:      "b",
+	}.NextMajor())
+	assert.Equal(t, Ver{
+		Major:      2,
+		Minor:      0,
+		Patch:      0,
+		PreRelease: "",
+		Build:      "",
+	}, Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		PreRelease: "a",
+		Build:      "b",
+	}.NextMajor())
+	assert.Panics(t, func() {
+		Ver{
+			Major:      math.MaxUint64,
+			Minor:      2,
+			Patch:      3,
+			PreRelease: "a",
+			Build:      "b",
+		}.NextMajor()
+	})
+}
+
+func Test_Ver_NextMinor(t *testing.T) {
+	assert.Equal(t, Ver{
+		Major:      0,
+		Minor:      1,
+		Patch:      0,
+		PreRelease: "",
+		Build:      "",
+	}, Ver{
+		Major:      0,
+		Minor:      0,
+		Patch:      2,
+		PreRelease: "a",
+		Build:      "b",
+	}.NextMinor())
+	assert.Equal(t, Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      0,
+		PreRelease: "",
+		Build:      "",
+	}, Ver{
+		Major:      1,
+		Minor:      1,
+		Patch:      3,
+		PreRelease: "a",
+		Build:      "b",
+	}.NextMinor())
+	assert.Panics(t, func() {
+		Ver{
+			Major:      0,
+			Minor:      math.MaxUint64,
+			Patch:      3,
+			PreRelease: "a",
+			Build:      "b",
+		}.NextMinor()
+	})
+}
+
+func Test_Ver_NextPatch(t *testing.T) {
+	assert.Equal(t, Ver{
+		Major:      0,
+		Minor:      0,
+		Patch:      1,
+		PreRelease: "",
+		Build:      "",
+	}, Ver{
+		Major:      0,
+		Minor:      0,
+		Patch:      0,
+		PreRelease: "a",
+		Build:      "b",
+	}.NextPatch())
+	assert.Equal(t, Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		PreRelease: "",
+		Build:      "",
+	}, Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      2,
+		PreRelease: "a",
+		Build:      "b",
+	}.NextPatch())
+	assert.Panics(t, func() {
+		Ver{
+			Major:      0,
+			Minor:      0,
+			Patch:      math.MaxUint64,
+			PreRelease: "a",
+			Build:      "b",
+		}.NextPatch()
+	})
+}
+
+func Test_Ver_MarshalText(t *testing.T) {
 	Formatter = func(buf []byte, v Ver, f Format) ([]byte, error) {
 		assert.Nil(t, buf)
 		assert.Equal(t, Ver{
@@ -387,7 +502,7 @@ func Test_Version_MarshalText(t *testing.T) {
 	assert.Equal(t, formatError, err)
 }
 
-func Test_Version_UnmarshalText(t *testing.T) {
+func Test_Ver_UnmarshalText(t *testing.T) {
 	Parser = func(input []byte, r Rule) (v Ver, err error) {
 		assert.Equal(t, []byte(`ab`), input)
 		assert.Equal(t, Rule(0), r)
@@ -424,7 +539,7 @@ func Test_Version_UnmarshalText(t *testing.T) {
 	}, v)
 }
 
-func Test_Version_StringTag(t *testing.T) {
+func Test_Ver_StringTag(t *testing.T) {
 	Formatter = func(buf []byte, v Ver, f Format) ([]byte, error) {
 		assert.Nil(t, buf)
 		assert.Equal(t, Ver{
@@ -461,7 +576,7 @@ func Test_Version_StringTag(t *testing.T) {
 	assert.Equal(t, `v1.2.3-a+b`, v.StringTag())
 }
 
-func Test_Version_String(t *testing.T) {
+func Test_Ver_String(t *testing.T) {
 	Formatter = func(buf []byte, v Ver, f Format) ([]byte, error) {
 		assert.Nil(t, buf)
 		assert.Equal(t, Ver{

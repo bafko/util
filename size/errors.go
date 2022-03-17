@@ -7,6 +7,8 @@ package size
 import (
 	"errors"
 	"fmt"
+
+	"go.lstv.dev/util/constraint"
 )
 
 var (
@@ -79,36 +81,36 @@ func (e *InvalidUnitError) Error() string {
 }
 
 // InvalidValueError represents invalid combination of value and unit.
-type InvalidValueError struct {
-	Value uint64
+type InvalidValueError[N constraint.Numbers] struct {
+	Value N
 	Unit  string
 }
 
-func newInvalidValueError(value uint64, unit string) *InvalidValueError {
-	return &InvalidValueError{
+func newInvalidValueError[N constraint.Numbers](value N, unit string) *InvalidValueError[N] {
+	return &InvalidValueError[N]{
 		Value: value,
 		Unit:  unit,
 	}
 }
 
 // Error returns string representation of error.
-func (e *InvalidValueError) Error() string {
+func (e *InvalidValueError[N]) Error() string {
 	if e.Unit == "" {
-		return fmt.Sprintf("value %d without unit is not suitable for uint64", e.Value)
+		return fmt.Sprintf("value %v without unit is not suitable for uint64", e.Value)
 	}
-	return fmt.Sprintf("value %d with unit %q is not suitable for uint64", e.Value, e.Unit)
+	return fmt.Sprintf("value %v with unit %q is not suitable for uint64", e.Value, e.Unit)
 }
 
 // ParseError represents error during version parsing.
 // Input can be empty, as same as Err.
-type ParseError struct {
+type ParseError[T constraint.ParserInput] struct {
 	Func  string
-	Input string
+	Input T
 	Err   error
 }
 
-func newParseError(funcName, input string, err error) *ParseError {
-	return &ParseError{
+func newParseError[T constraint.ParserInput](funcName string, input T, err error) *ParseError[T] {
+	return &ParseError[T]{
 		Func:  funcName,
 		Input: input,
 		Err:   err,
@@ -116,17 +118,17 @@ func newParseError(funcName, input string, err error) *ParseError {
 }
 
 // Unwrap returns under-laying error if any.
-func (e *ParseError) Unwrap() error {
+func (e *ParseError[T]) Unwrap() error {
 	return e.Err
 }
 
 // Error returns string representation of error.
-func (e *ParseError) Error() string {
+func (e *ParseError[T]) Error() string {
 	err := "unable to parse"
 	if e.Err != nil {
 		err = e.Err.Error()
 	}
-	if e.Input == "" {
+	if len(e.Input) == 0 {
 		return fmt.Sprintf("size.%s: %s", e.Func, err)
 	}
 	return fmt.Sprintf("size.%s: parsing %q: %s", e.Func, e.Input, err)
