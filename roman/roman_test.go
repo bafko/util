@@ -6,6 +6,7 @@ package roman
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -48,6 +49,15 @@ func Test_Number_UnmarshalText(t *testing.T) {
 	}
 	assert.NoError(t, n.UnmarshalText([]byte(`abc`)))
 	assert.Equal(t, Number(15749), n)
+}
+
+func Test_Number_Format(t *testing.T) {
+	n := Number(4)
+	assert.Equal(t, `IIII`, fmt.Sprintf("%L", n))
+	assert.Equal(t, `iiii`, fmt.Sprintf("%l", n))
+	assert.Equal(t, `IV`, fmt.Sprintf("%R", n))
+	assert.Equal(t, `iv`, fmt.Sprintf("%r", n))
+	assert.Equal(t, `IV`, fmt.Sprintf("%s", n))
 }
 
 func Test_Number_String(t *testing.T) {

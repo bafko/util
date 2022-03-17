@@ -52,6 +52,11 @@ const (
 	//   CM -> DCCCC
 	FormatLong900
 
+	// FormatLowerCase enforce small letters (e.g. iv).
+	// Default case is upper.
+	//   IV -> iv
+	FormatLowerCase
+
 	// FormatLong4x is combination of FormatLong4,  FormatLong40 and FormatLong400.
 	FormatLong4x = FormatLong4 | FormatLong40 | FormatLong400
 
@@ -79,6 +84,9 @@ func DefaultFormatter(buf []byte, n Number, f Format) ([]byte, error) {
 	r, i = bits.Div64(0, i, 10)
 	b.WriteString(toTens(r, f))
 	b.WriteString(toUnits(i, f))
+	if f&FormatLowerCase != 0 {
+		return toLower(b.Bytes()), nil
+	}
 	return b.Bytes(), nil
 }
 
@@ -110,4 +118,26 @@ func toUnits(value uint64, f Format) string {
 		return "VIIII"
 	}
 	return units[value]
+}
+
+func toLower(buf []byte) []byte {
+	for i, b := range buf {
+		switch b {
+		case 'I':
+			buf[i] = 'i'
+		case 'V':
+			buf[i] = 'v'
+		case 'X':
+			buf[i] = 'x'
+		case 'L':
+			buf[i] = 'l'
+		case 'C':
+			buf[i] = 'c'
+		case 'D':
+			buf[i] = 'd'
+		case 'M':
+			buf[i] = 'm'
+		}
+	}
+	return buf
 }
