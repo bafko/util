@@ -189,7 +189,7 @@ func (d *Date) UnmarshalBinary(data []byte) error {
 		return fmt.Errorf("Date.UnmarshalBinary: %w: empty data", ErrInvalidLength)
 	}
 	if data[0] != version {
-		return fmt.Errorf("Date.UnmarshalBinary: %w: expected %d instead of %d)", ErrUnsupportedVersion, version, data[0])
+		return fmt.Errorf("Date.UnmarshalBinary: %w: expected %d instead of %d", ErrUnsupportedVersion, version, data[0])
 	}
 	if l != 7 { // version(1)+year(4)+month(1)+day(1)
 		return fmt.Errorf("Date.UnmarshalBinary: %w: expected 7 instead of %d", ErrInvalidLength, l)

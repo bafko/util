@@ -9,6 +9,8 @@ import (
 	"math"
 	"testing"
 
+	"go.lstv.dev/util/test"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -469,16 +471,19 @@ func Test_Ver_MarshalText(t *testing.T) {
 		assert.Equal(t, Format(0), f)
 		return []byte(`ab`), nil
 	}
-	b, err := Ver{
-		Major:      2,
-		Minor:      1,
-		Patch:      3,
-		PreRelease: "a",
-		Build:      "b",
-	}.MarshalText()
-	assert.Equal(t, []byte(`ab`), b)
-	assert.NoError(t, err)
-	formatError := errors.New("format error")
+	test.MarshalText(t, []test.CaseText[Ver]{
+		{
+			Data: `ab`,
+			Value: Ver{
+				Major:      2,
+				Minor:      1,
+				Patch:      3,
+				PreRelease: "a",
+				Build:      "b",
+			},
+		},
+	})
+
 	Formatter = func(buf []byte, v Ver, f Format) ([]byte, error) {
 		assert.Nil(t, buf)
 		assert.Equal(t, Ver{
@@ -489,17 +494,20 @@ func Test_Ver_MarshalText(t *testing.T) {
 			Build:      "b",
 		}, v)
 		assert.Equal(t, Format(0), f)
-		return nil, formatError
+		return nil, errors.New("format error")
 	}
-	b, err = Ver{
-		Major:      2,
-		Minor:      1,
-		Patch:      3,
-		PreRelease: "a",
-		Build:      "b",
-	}.MarshalText()
-	assert.Nil(t, b)
-	assert.Equal(t, formatError, err)
+	test.MarshalText(t, []test.CaseText[Ver]{
+		{
+			Error: test.Error("format error"),
+			Value: Ver{
+				Major:      2,
+				Minor:      1,
+				Patch:      3,
+				PreRelease: "a",
+				Build:      "b",
+			},
+		},
+	})
 }
 
 func Test_Ver_UnmarshalText(t *testing.T) {
@@ -514,29 +522,30 @@ func Test_Ver_UnmarshalText(t *testing.T) {
 			Build:      "b",
 		}, nil
 	}
-	v := Ver{}
-	assert.NoError(t, v.UnmarshalText([]byte(`ab`)))
-	assert.Equal(t, Ver{
-		Major:      1,
-		Minor:      2,
-		Patch:      3,
-		PreRelease: "a",
-		Build:      "b",
-	}, v)
-	parseError := errors.New("parse error")
+	test.UnmarshalText(t, []test.CaseText[Ver]{
+		{
+			Data: `ab`,
+			Value: Ver{
+				Major:      1,
+				Minor:      2,
+				Patch:      3,
+				PreRelease: "a",
+				Build:      "b",
+			},
+		},
+	}, nil)
+
 	Parser = func(input []byte, r Rule) (v Ver, err error) {
 		assert.Equal(t, []byte(`ab`), input)
 		assert.Equal(t, Rule(0), r)
-		return Ver{}, parseError
+		return Ver{}, errors.New("parse error")
 	}
-	assert.Equal(t, parseError, v.UnmarshalText([]byte(`ab`)))
-	assert.Equal(t, Ver{
-		Major:      1,
-		Minor:      2,
-		Patch:      3,
-		PreRelease: "a",
-		Build:      "b",
-	}, v)
+	test.UnmarshalText(t, []test.CaseText[Ver]{
+		{
+			Error: test.Error("parse error"),
+			Data:  `ab`,
+		},
+	}, nil)
 }
 
 func Test_Ver_StringTag(t *testing.T) {

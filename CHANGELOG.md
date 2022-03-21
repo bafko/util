@@ -7,6 +7,12 @@
 - Method `roman.Number.Format` as implementation for fmt.Formatter.
 - Package `test` for enhanced testing.
 
+### Changed
+- Implementation of tests.
+
+### Fixed
+- Method `Date.MarshalBinary` error.
+
 ## [0.4.0] - 2022-03-16
 ### Added
 - Package `constraint` with generic support and helpers.
