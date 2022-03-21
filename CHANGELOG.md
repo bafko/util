@@ -5,6 +5,7 @@
 ## [0.5.0] - 2022-03-17
 ### Added
 - Method `roman.Number.Format` as implementation for fmt.Formatter.
+- Package `test` for enhanced testing.
 
 ## [0.4.0] - 2022-03-16
 ### Added

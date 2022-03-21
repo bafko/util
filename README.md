@@ -60,3 +60,14 @@ import "go.lstv.dev/util/size"
   - numeric form (JSON number is always in bytes)
   - string form (JSON string with or without units)
   - object form (JSON object like `{"value":1000,"unit":"MiB"}`)
+
+## Test
+```go
+import "go.lstv.dev/util/test"
+```
+
+- Provides functions to test marshal and unmarshal methods:
+  - `MarshalBinary` and `UnmarshalBinary`
+  - `MarshalText` and `UnmarshalText`
+  - `MarshalJSON` and `UnmarshalJSON`
+- See [examples](./test/README.md).
