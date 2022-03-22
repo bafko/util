@@ -7,10 +7,11 @@
 
 Open source implementation of Livesport TV utilities library.
 
-Each package provide `Formatter` and `Parser` variables to override default behavior of
+Packages provide `Formatter` and `Parser` variables to override default behavior of
 format methods (`MarshalText`, `MarshalJSON`, `String`, ...)
 and parse methods (`UnmarshalText`, `UnmarshalJSON`, ...).
 Default value of `Formatter` is `DefaultFormatter` and default value of `Parser` is `DefaultParser`.
+Also, specific verbs for `fmt` formatting are available.
 
 ## Date
 ```go

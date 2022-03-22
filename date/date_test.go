@@ -211,6 +211,16 @@ func Test_Date_xml(t *testing.T) {
 	assertDate(t, 2020, August, 7, test.B)
 }
 
+func Test_Date_Format(t *testing.T) {
+	Formatter = DefaultFormatter
+	assert.Equal(t, `00010101`, fmt.Sprintf("%b", Date{}))
+	assert.Equal(t, `0001-01-01`, fmt.Sprintf("%e", Date{}))
+	assert.Equal(t, `0001-01-01`, fmt.Sprintf("%s", Date{}))
+	assert.Equal(t, `20020807`, fmt.Sprintf("%b", New(2002, August, 7)))
+	assert.Equal(t, `2002-08-07`, fmt.Sprintf("%e", New(2002, August, 7)))
+	assert.Equal(t, `2002-08-07`, fmt.Sprintf("%s", New(2002, August, 7)))
+}
+
 func Test_Date_Scan(t *testing.T) {
 	date := Date{}
 	assert.NoError(t, date.Scan(time.Date(2002, August, 7, 14, 12, 55, 7, time.FixedZone("+1", 60*60))))
@@ -226,13 +236,40 @@ func Test_Date_Value(t *testing.T) {
 }
 
 func Test_Date_String(t *testing.T) {
-	err := errors.New("error")
 	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
-		return nil, err
+		assert.Nil(t, buf)
+		assert.Equal(t, New(2002, August, 7), d)
+		assert.Equal(t, Format(0), f)
+		return []byte(`x`), nil
+	}
+	assert.Equal(t, `x`, New(2002, August, 7).String())
+
+	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
+		return nil, errors.New("error")
 	}
 	assert.Equal(t, `0001-01-01`, Date{}.String())
 	assert.Equal(t, `2002-08-07`, New(2002, August, 7).String())
-	Formatter = DefaultFormatter
-	assert.Equal(t, `0001-01-01`, Date{}.String())
-	assert.Equal(t, `2002-08-07`, New(2002, August, 7).String())
+}
+
+func Test_Date_format(t *testing.T) {
+	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
+		assert.Nil(t, buf)
+		assert.Equal(t, New(2002, August, 7), d)
+		assert.Equal(t, FormatBasic, f)
+		return []byte(`x`), nil
+	}
+	assert.Equal(t, []byte(`x`), New(2002, August, 7).format(FormatBasic))
+
+	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
+		return nil, errors.New("error")
+	}
+	assert.Equal(t, []byte(`0001-01-01`), Date{}.format(0))
+	assert.Equal(t, []byte(`2002-08-07`), New(2002, August, 7).format(0))
+}
+
+func Test_formatByVerb(t *testing.T) {
+	assert.Equal(t, Format(0), formatByVerb(' '))
+	assert.Equal(t, Format(0), formatByVerb('s'))
+	assert.Equal(t, Format(0), formatByVerb('e'))
+	assert.Equal(t, FormatBasic, formatByVerb('b'))
 }

@@ -6,6 +6,7 @@ package sem
 
 import (
 	"errors"
+	"fmt"
 	"math"
 	"testing"
 
@@ -344,6 +345,63 @@ func Test_Ver_Valid(t *testing.T) {
 	assert.Error(t, v.Valid())
 }
 
+func Test_Ver_IsZero(t *testing.T) {
+	v := Ver{}
+	assert.True(t, v.IsZero())
+	v = Ver{Major: 1}
+	assert.False(t, v.IsZero())
+	v = Ver{Minor: 1}
+	assert.False(t, v.IsZero())
+	v = Ver{Patch: 1}
+	assert.False(t, v.IsZero())
+	v = Ver{Build: "a"}
+	assert.False(t, v.IsZero())
+	v = Ver{PreRelease: "b"}
+	assert.False(t, v.IsZero())
+}
+
+func Test_Ver_Core(t *testing.T) {
+	v := Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		PreRelease: "",
+		Build:      "",
+	}
+	assert.Equal(t, Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		PreRelease: "",
+		Build:      "",
+	}, v.Core())
+	v.Build = "a"
+	assert.Equal(t, Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		PreRelease: "",
+		Build:      "",
+	}, v.Core())
+	v.Build = "a"
+	v.PreRelease = "b"
+	assert.Equal(t, Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		PreRelease: "",
+		Build:      "",
+	}, v.Core())
+	v.Build = ""
+	assert.Equal(t, Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		PreRelease: "",
+		Build:      "",
+	}, v.Core())
+}
+
 func Test_Ver_NextMajor(t *testing.T) {
 	assert.Equal(t, Ver{
 		Major:      1,
@@ -548,6 +606,13 @@ func Test_Ver_UnmarshalText(t *testing.T) {
 	}, nil)
 }
 
+func Test_Ver_Format(t *testing.T) {
+	Formatter = DefaultFormatter
+	assert.Equal(t, "sem.Ver", fmt.Sprintf("%T", New(1, 2, 3, "b", "p")))
+	assert.Equal(t, "v1.2.3-b+p", fmt.Sprintf("%t", New(1, 2, 3, "b", "p")))
+	assert.Equal(t, "1.2.3-b+p", fmt.Sprintf("%s", New(1, 2, 3, "b", "p")))
+}
+
 func Test_Ver_StringTag(t *testing.T) {
 	Formatter = func(buf []byte, v Ver, f Format) ([]byte, error) {
 		assert.Nil(t, buf)
@@ -606,7 +671,7 @@ func Test_Ver_String(t *testing.T) {
 		Build:      "b",
 	}
 	assert.Equal(t, `x`, v.String())
-	formatError := errors.New("format error")
+
 	Formatter = func(buf []byte, v Ver, f Format) ([]byte, error) {
 		assert.Nil(t, buf)
 		assert.Equal(t, Ver{
@@ -617,7 +682,50 @@ func Test_Ver_String(t *testing.T) {
 			Build:      "b",
 		}, v)
 		assert.Equal(t, Format(0), f)
-		return nil, formatError
+		return nil, errors.New("format error")
 	}
 	assert.Equal(t, `1.2.3-a+b`, v.String())
+}
+
+func Test_Ver_format(t *testing.T) {
+	Formatter = func(buf []byte, v Ver, f Format) ([]byte, error) {
+		assert.Nil(t, buf)
+		assert.Equal(t, Ver{
+			Major:      1,
+			Minor:      2,
+			Patch:      3,
+			PreRelease: "a",
+			Build:      "b",
+		}, v)
+		assert.Equal(t, FormatTag, f)
+		return []byte(`x`), nil
+	}
+	v := Ver{
+		Major:      1,
+		Minor:      2,
+		Patch:      3,
+		PreRelease: "a",
+		Build:      "b",
+	}
+	assert.Equal(t, []byte(`x`), v.format(FormatTag))
+
+	Formatter = func(buf []byte, v Ver, f Format) ([]byte, error) {
+		assert.Nil(t, buf)
+		assert.Equal(t, Ver{
+			Major:      1,
+			Minor:      2,
+			Patch:      3,
+			PreRelease: "a",
+			Build:      "b",
+		}, v)
+		assert.Equal(t, FormatTag, f)
+		return nil, errors.New("format error")
+	}
+	assert.Equal(t, []byte(`v1.2.3-a+b`), v.format(FormatTag))
+}
+
+func Test_formatByVerb(t *testing.T) {
+	assert.Equal(t, Format(0), formatByVerb(' '))
+	assert.Equal(t, Format(0), formatByVerb('s'))
+	assert.Equal(t, FormatTag, formatByVerb('t'))
 }

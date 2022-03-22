@@ -2,9 +2,14 @@
 
 ## [Unreleased]
 
-## [0.5.0] - 2022-03-17
+## [0.5.0] - 2022-03-22
 ### Added
-- Method `roman.Number.Format` as implementation for fmt.Formatter.
+- Format `roman.FormatLowerCase`.
+- Methods `sem.Ver.Core` and `sem.Ver.IsZero`.
+- Implementation of `fmt.Formatter` for:
+  - `date.Date`
+  - `roman.Number`
+  - `sem.Ver`
 - Package `test` for enhanced testing.
 
 ### Changed

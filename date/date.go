@@ -215,6 +215,16 @@ func (d *Date) UnmarshalText(data []byte) error {
 	return nil
 }
 
+// Format is implementation for fmt.Formatter.
+//
+//   Verb  Format         Example
+//     %b    FormatBasic    "20060102"
+//     %e    Format(0)      "2006-01-02"
+//     %s    Format(0)      "2006-01-02"
+func (d Date) Format(f fmt.State, verb rune) {
+	f.Write(d.format(formatByVerb(verb)))
+}
+
 // Scan is support for database/sql package.
 // It can return wrapped ErrInvalidType.
 func (d *Date) Scan(src any) error {
@@ -233,9 +243,24 @@ func (d Date) Value() (driver.Value, error) {
 // String formats date for string output.
 // If Formatter returns error, String returns same value as DefaultFormatter.
 func (d Date) String() string {
-	b, err := Formatter(nil, d, 0)
+	return string(d.format(0))
+}
+
+func (d Date) format(f Format) []byte {
+	b, err := Formatter(nil, d, f)
 	if err != nil {
-		b, _ = DefaultFormatter(nil, d, 0)
+		b, _ = DefaultFormatter(nil, d, f)
 	}
-	return string(b)
+	return b
+}
+
+func formatByVerb(verb rune) Format {
+	switch verb {
+	case 'b':
+		return FormatBasic
+	case 'e':
+		return 0
+	default:
+		return 0
+	}
 }
