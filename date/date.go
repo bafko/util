@@ -217,10 +217,10 @@ func (d *Date) UnmarshalText(data []byte) error {
 
 // Format is implementation for fmt.Formatter.
 //
-//   Verb  Format         Example
-//     %b    FormatBasic    "20060102"
-//     %e    Format(0)      "2006-01-02"
-//     %s    Format(0)      "2006-01-02"
+//   ┌ Verb ┬ Format ─────┬ Example ─────┐
+//   │ %b   │ FormatBasic │ "20060102"   │
+//   │ %e   │ Format(0)   │ "2006-01-02" │
+//   │ %s   │ Format(0)   │ "2006-01-02" │
 func (d Date) Format(f fmt.State, verb rune) {
 	f.Write(d.format(formatByVerb(verb)))
 }

@@ -36,12 +36,12 @@ func (n *Number) UnmarshalText(data []byte) error {
 
 // Format is implementation for fmt.Formatter.
 //
-//   Verb  Format                        Example
-//     %L    FormatLong                    "VIIII"
-//     %R    Format(0)                     "IX"
-//     %l    FormatLowerCase|FormatLong    "viiii"
-//     %r    FormatLowerCase               "ix"
-//     %s    DefaultFormat                 "IX"
+//   ┌ Verb ┬ Format ────────────────────┬ Example ┐
+//   │ %L   │ FormatLong                 │ "VIIII" │
+//   │ %R   │ Format(0)                  │ "IX"    │
+//   │ %l   │ FormatLowerCase|FormatLong │ "viiii" │
+//   │ %r   │ FormatLowerCase            │ "ix"    │
+//   │ %s   │ DefaultFormat              │ "IX"    │
 func (n Number) Format(f fmt.State, verb rune) {
 	f.Write(n.format(formatByVerb(verb)))
 }

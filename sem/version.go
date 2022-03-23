@@ -184,9 +184,9 @@ func (v *Ver) UnmarshalText(data []byte) error {
 
 // Format is implementation for fmt.Formatter.
 //
-//   Verb  Format       Example
-//     %s    Format(0)    "1.2.3-b+p"
-//     %t    FormatTag    "v1.2.3-b+p"
+//   ┌ Verb ┬ Format ───┬ Example ─────┐
+//   │ %s   │ Format(0) │ "1.2.3-b+p"  │
+//   │ %t   │ FormatTag │ "v1.2.3-b+p" │
 func (v Ver) Format(f fmt.State, verb rune) {
 	f.Write(v.format(formatByVerb(verb)))
 }
