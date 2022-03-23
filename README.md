@@ -7,10 +7,11 @@
 
 Open source implementation of Livesport TV utilities library.
 
-Each package provide `Formatter` and `Parser` variables to override default behavior of
+Packages provide `Formatter` and `Parser` variables to override default behavior of
 format methods (`MarshalText`, `MarshalJSON`, `String`, ...)
 and parse methods (`UnmarshalText`, `UnmarshalJSON`, ...).
 Default value of `Formatter` is `DefaultFormatter` and default value of `Parser` is `DefaultParser`.
+Also, specific verbs for `fmt` formatting are available.
 
 ## Date
 ```go
@@ -60,3 +61,14 @@ import "go.lstv.dev/util/size"
   - numeric form (JSON number is always in bytes)
   - string form (JSON string with or without units)
   - object form (JSON object like `{"value":1000,"unit":"MiB"}`)
+
+## Test
+```go
+import "go.lstv.dev/util/test"
+```
+
+- Provides functions to test marshal and unmarshal methods:
+  - `MarshalBinary` and `UnmarshalBinary`
+  - `MarshalText` and `UnmarshalText`
+  - `MarshalJSON` and `UnmarshalJSON`
+- See [examples](./test/README.md).

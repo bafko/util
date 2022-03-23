@@ -5,6 +5,7 @@
 package roman
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,13 +30,18 @@ func Test_DefaultFormatter(t *testing.T) {
 		1000: "M",
 		3001: "MMMI",
 	}
-	for in, out := range data {
-		b, err := DefaultFormatter(nil, in, 0)
-		assert.Equal(t, out, string(b))
-		assert.NoError(t, err)
-		b, err = DefaultFormatter([]byte(`AB`), in, 0)
-		assert.Equal(t, `AB`+out, string(b))
-		assert.NoError(t, err)
+	for _, f := range []Format{0, FormatLowerCase} {
+		for in, out := range data {
+			if f == FormatLowerCase {
+				out = strings.ToLower(out)
+			}
+			b, err := DefaultFormatter(nil, in, f)
+			assert.Equal(t, out, string(b))
+			assert.NoError(t, err)
+			b, err = DefaultFormatter([]byte(`AB`), in, f)
+			assert.Equal(t, `AB`+out, string(b))
+			assert.NoError(t, err)
+		}
 	}
 }
 
@@ -58,4 +64,8 @@ func Test_toUnits(t *testing.T) {
 	assert.Equal(t, `IIII`, toUnits(4, FormatLong4))
 	assert.Equal(t, `IX`, toUnits(9, 0))
 	assert.Equal(t, `VIIII`, toUnits(9, FormatLong9))
+}
+
+func Test_toLower(t *testing.T) {
+	assert.Equal(t, []byte(`ivxlcdm`), toLower([]byte(`IVXLCDM`)))
 }

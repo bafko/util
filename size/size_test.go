@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"go.lstv.dev/util/constraint"
+	"go.lstv.dev/util/test"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -131,49 +132,62 @@ func Test_Size_MarshalText(t *testing.T) {
 		assert.Equal(t, Format(0), f)
 		return []byte(`+10`), nil
 	}
-	b, err := Size(10).MarshalText()
-	assert.Equal(t, []byte(`+10`), b)
-	assert.NoError(t, err)
+	test.MarshalText(t, []test.CaseText[Size]{
+		{
+			Data:  `+10`,
+			Value: Size(10),
+		},
+	})
 
 	DisableMarshalTextUnit = true
-	b, err = Size(10).MarshalText()
-	assert.Equal(t, []byte(`10`), b)
-	assert.NoError(t, err)
+	test.MarshalText(t, []test.CaseText[Size]{
+		{
+			Data:  `10`,
+			Value: Size(10),
+		},
+	})
 
-	formatError := errors.New("format error")
 	DisableMarshalTextUnit = false
 	Formatter = func(buf []byte, s Size, f Format) ([]byte, error) {
 		assert.Equal(t, Size(10), s)
 		assert.Equal(t, Format(0), f)
-		return nil, formatError
+		return nil, errors.New("format error")
 	}
-	b, err = Size(10).MarshalText()
-	assert.Nil(t, b)
-	assert.Equal(t, formatError, err)
+	test.MarshalText(t, []test.CaseText[Size]{
+		{
+			Error: test.Error("format error"),
+			Value: Size(10),
+		},
+	})
 }
 
 func Test_Size_UnmarshalText(t *testing.T) {
-	text := []byte(`20KiB`)
+	text := `20KiB`
 	value := Size(20 * 1024)
 
-	s := Size(10)
 	Parser = func(input []byte, r Rule) (Size, error) {
-		assert.Equal(t, text, input)
+		assert.Equal(t, text, string(input))
 		assert.Equal(t, DefaultRule&ruleUnmarshalTextMask, r)
 		return value, nil
 	}
-	assert.NoError(t, s.UnmarshalText(text))
-	assert.Equal(t, value, s)
+	test.UnmarshalText(t, []test.CaseText[Size]{
+		{
+			Data:  text,
+			Value: value,
+		},
+	}, nil)
 
-	s = Size(10)
-	parseError := errors.New("parse error")
 	Parser = func(input []byte, r Rule) (Size, error) {
-		assert.Equal(t, text, input)
+		assert.Equal(t, text, string(input))
 		assert.Equal(t, DefaultRule&ruleUnmarshalTextMask, r)
-		return 0, parseError
+		return 0, errors.New("parse error")
 	}
-	assert.Equal(t, parseError, s.UnmarshalText(text))
-	assert.Equal(t, Size(10), s)
+	test.UnmarshalText(t, []test.CaseText[Size]{
+		{
+			Error: test.Error("parse error"),
+			Data:  text,
+		},
+	}, nil)
 }
 
 func Test_Size_MarshalJSON(t *testing.T) {
@@ -185,53 +199,69 @@ func Test_Size_MarshalJSON(t *testing.T) {
 		assert.Equal(t, Format(0), f)
 		return []byte(`+10`), nil
 	}
-	b, err := Size(10).MarshalJSON()
-	assert.Equal(t, []byte(`{"value":10,"unit":"B"}`), b)
-	assert.NoError(t, err)
+	test.MarshalJSON(t, []test.CaseJSON[Size]{
+		{
+			Data:  `{"value":10,"unit":"B"}`,
+			Value: Size(10),
+		},
+	})
 
 	DisableMarshalJSONObjectForm = true
-	b, err = Size(10).MarshalJSON()
-	assert.Equal(t, []byte(`"+10"`), b)
-	assert.NoError(t, err)
+	test.MarshalJSON(t, []test.CaseJSON[Size]{
+		{
+			Data:  `"+10"`,
+			Value: Size(10),
+		},
+	})
 
-	formatError := errors.New("format error")
 	Formatter = func(buf []byte, s Size, f Format) ([]byte, error) {
 		assert.Equal(t, Size(10), s)
 		assert.Equal(t, Format(0), f)
-		return nil, formatError
+		return nil, errors.New("format error")
 	}
-	b, err = Size(10).MarshalJSON()
-	assert.Nil(t, b)
-	assert.Equal(t, formatError, err)
+	test.MarshalJSON(t, []test.CaseJSON[Size]{
+		{
+			Error: test.Error("format error"),
+			Value: Size(10),
+		},
+	})
 
 	DisableMarshalJSONStringForm = true
-	b, err = Size(10).MarshalJSON()
-	assert.Equal(t, []byte(`10`), b)
-	assert.NoError(t, err)
+	test.MarshalJSON(t, []test.CaseJSON[Size]{
+		{
+			Data:  `10`,
+			Value: Size(10),
+		},
+	})
 }
 
 func Test_Size_UnmarshalJSON(t *testing.T) {
-	json := []byte(`"20KiB"`)
+	json := `"20KiB"`
 	value := Size(20 * 1024)
 
-	s := Size(10)
 	Parser = func(input []byte, r Rule) (Size, error) {
-		assert.Equal(t, json, input)
+		assert.Equal(t, json, string(input))
 		assert.Equal(t, DefaultRule, r)
 		return value, nil
 	}
-	assert.NoError(t, s.UnmarshalJSON(json))
-	assert.Equal(t, value, s)
+	test.UnmarshalJSON(t, []test.CaseJSON[Size]{
+		{
+			Data:  json,
+			Value: value,
+		},
+	}, nil)
 
-	s = Size(10)
-	parseError := errors.New("parse error")
 	Parser = func(input []byte, r Rule) (Size, error) {
-		assert.Equal(t, json, input)
+		assert.Equal(t, json, string(input))
 		assert.Equal(t, DefaultRule, r)
-		return 0, parseError
+		return 0, errors.New("parse error")
 	}
-	assert.Equal(t, parseError, s.UnmarshalJSON(json))
-	assert.Equal(t, Size(10), s)
+	test.UnmarshalJSON(t, []test.CaseJSON[Size]{
+		{
+			Error: test.Error("parse error"),
+			Data:  json,
+		},
+	}, nil)
 }
 
 func Test_Size_PrettyHTML(t *testing.T) {

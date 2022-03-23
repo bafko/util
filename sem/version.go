@@ -7,6 +7,7 @@
 package sem
 
 import (
+	"fmt"
 	"math/bits"
 )
 
@@ -86,7 +87,7 @@ func (v Ver) Latest(ver Ver) Ver {
 	return v
 }
 
-// Valid checks version validity.
+// Valid check version validity.
 // It checks pre-release and build component of version.
 // It can return ErrInvalidPreRelease or ErrInvalidBuild errors.
 func (v Ver) Valid() error {
@@ -97,6 +98,22 @@ func (v Ver) Valid() error {
 		return ErrInvalidBuild
 	}
 	return nil
+}
+
+// IsZero returns true if version is 0.0.0.
+func (v Ver) IsZero() bool {
+	return v.Major == 0 && v.Minor == 0 && v.Patch == 0 && v.Build == "" && v.PreRelease == ""
+}
+
+// Core returns new version without build and pre-release.
+func (v Ver) Core() Ver {
+	return Ver{
+		Major:      v.Major,
+		Minor:      v.Minor,
+		Patch:      v.Patch,
+		PreRelease: "",
+		Build:      "",
+	}
 }
 
 // NextMajor returns new version with incremented major and zero minor and patch.
@@ -165,22 +182,40 @@ func (v *Ver) UnmarshalText(data []byte) error {
 	return nil
 }
 
+// Format is implementation for fmt.Formatter.
+//
+//   ┌ Verb ┬ Format ───┬ Example ─────┐
+//   │ %s   │ Format(0) │ "1.2.3-b+p"  │
+//   │ %t   │ FormatTag │ "v1.2.3-b+p" │
+func (v Ver) Format(f fmt.State, verb rune) {
+	f.Write(v.format(formatByVerb(verb)))
+}
+
 // StringTag formats version as string tag.
 // If Formatter returns error, StringTag returns same value as DefaultFormatter.
 func (v Ver) StringTag() string {
-	b, err := Formatter(nil, v, FormatTag)
-	if err != nil {
-		b, _ = DefaultFormatter(nil, v, FormatTag)
-	}
-	return string(b)
+	return string(v.format(FormatTag))
 }
 
 // String formats version for string output.
 // If Formatter returns error, String returns same value as DefaultFormatter.
 func (v Ver) String() string {
-	b, err := Formatter(nil, v, 0)
+	return string(v.format(0))
+}
+
+func (v Ver) format(f Format) []byte {
+	b, err := Formatter(nil, v, f)
 	if err != nil {
-		b, _ = DefaultFormatter(nil, v, 0)
+		b, _ = DefaultFormatter(nil, v, f)
 	}
-	return string(b)
+	return b
+}
+
+func formatByVerb(verb rune) Format {
+	switch verb {
+	case 't':
+		return FormatTag
+	default:
+		return 0
+	}
 }

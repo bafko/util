@@ -5,6 +5,10 @@
 // Package roman provides type Number to keep and convert roman number to decimal number and vice versa.
 package roman
 
+import (
+	"fmt"
+)
+
 var (
 	// DefaultFormat is used at Number.MarshalText and Number.String.
 	DefaultFormat = Format(0)
@@ -30,15 +34,46 @@ func (n *Number) UnmarshalText(data []byte) error {
 	return nil
 }
 
+// Format is implementation for fmt.Formatter.
+//
+//   ┌ Verb ┬ Format ────────────────────┬ Example ┐
+//   │ %L   │ FormatLong                 │ "VIIII" │
+//   │ %R   │ Format(0)                  │ "IX"    │
+//   │ %l   │ FormatLowerCase|FormatLong │ "viiii" │
+//   │ %r   │ FormatLowerCase            │ "ix"    │
+//   │ %s   │ DefaultFormat              │ "IX"    │
+func (n Number) Format(f fmt.State, verb rune) {
+	f.Write(n.format(formatByVerb(verb)))
+}
+
 // String formats roman number for string output.
 // If Formatter returns error, String returns same value as DefaultFormatter.
 //
 // See also DefaultFormat.
 func (n Number) String() string {
-	b, err := Formatter(nil, n, DefaultFormat)
+	return string(n.format(DefaultFormat))
+}
+
+func (n Number) format(f Format) []byte {
+	b, err := Formatter(nil, n, f)
 	if err != nil {
-		b, _ = DefaultFormatter(nil, n, DefaultFormat)
-		return string(b)
+		b, _ = DefaultFormatter(nil, n, f)
+		return b
 	}
-	return string(b)
+	return b
+}
+
+func formatByVerb(verb rune) Format {
+	switch verb {
+	case 'L':
+		return FormatLong
+	case 'l':
+		return FormatLong | FormatLowerCase
+	case 'R':
+		return 0
+	case 'r':
+		return FormatLowerCase
+	default:
+		return DefaultFormat
+	}
 }

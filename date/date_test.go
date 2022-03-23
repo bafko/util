@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"go.lstv.dev/util/test"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -123,43 +125,79 @@ func Test_Date_DaysBetween(t *testing.T) {
 }
 
 func Test_Date_MarshalBinary(t *testing.T) {
-	b, err := Date{}.MarshalBinary()
-	assert.Equal(t, []byte{1, 0, 0, 0, 1, 1, 1}, b)
-	assert.NoError(t, err)
-	b, err = New(2002, August, 7).MarshalBinary()
-	assert.Equal(t, []byte{1, 0, 0, 0x7, 0xd2, 8, 7}, b)
-	assert.NoError(t, err)
+	test.MarshalBinary(t, []test.CaseBinary[Date]{
+		{ // 0
+			Data:  []byte{1, 0, 0, 0, 1, 1, 1},
+			Value: Date{},
+		},
+		{ // 1
+			Data:  []byte{1, 0, 0, 0x7, 0xd2, 8, 7},
+			Value: New(2002, August, 7),
+		},
+	})
 }
 
 func Test_Date_UnmarshalBinary(t *testing.T) {
-	date := New(2002, August, 7)
-	assert.NoError(t, date.UnmarshalBinary([]byte{1, 0, 0, 0, 1, 1, 1}))
-	assertDate(t, 1, January, 1, date)
-	assert.NoError(t, date.UnmarshalBinary([]byte{1, 0, 0, 0x7, 0xd2, 8, 7}))
-	assertDate(t, 2002, August, 7, date)
-	assert.Error(t, date.UnmarshalBinary([]byte(nil)))
-	assert.Error(t, date.UnmarshalBinary([]byte{1}))
-	assert.Error(t, date.UnmarshalBinary([]byte(`2002`)))
-	assert.Error(t, date.UnmarshalBinary([]byte(`"2002-08-07"`)))
+	test.UnmarshalBinary(t, []test.CaseBinary[Date]{
+		{ // 0
+			Data:  []byte{1, 0, 0, 0, 1, 1, 1},
+			Value: Date{},
+		},
+		{ // 1
+			Data:  []byte{1, 0, 0, 0x7, 0xd2, 8, 7},
+			Value: New(2002, August, 7),
+		},
+		{ // 2
+			Error: test.Error("Date.UnmarshalBinary: invalid length: empty data"),
+			Data:  []byte(nil),
+		},
+		{ // 3
+			Error: test.Error("Date.UnmarshalBinary: invalid length: expected 7 instead of 1"),
+			Data:  []byte{1},
+		},
+		{ // 4
+			Error: test.Error("Date.UnmarshalBinary: unsupported version: expected 1 instead of 50"),
+			Data:  []byte(`2002`),
+		},
+		{ // 5
+			Error: test.Error("Date.UnmarshalBinary: unsupported version: expected 1 instead of 34"),
+			Data:  []byte(`"2002-08-07"`),
+		},
+	}, nil)
 }
 
 func Test_Date_MarshalText(t *testing.T) {
-	b, err := Date{}.MarshalText()
-	assert.Equal(t, []byte(`0001-01-01`), b)
-	assert.NoError(t, err)
-	b, err = New(2002, August, 7).MarshalText()
-	assert.Equal(t, []byte(`2002-08-07`), b)
-	assert.NoError(t, err)
+	test.MarshalText(t, []test.CaseText[Date]{
+		{ // 0
+			Data:  `0001-01-01`,
+			Value: Date{},
+		},
+		{ // 1
+			Data:  `2002-08-07`,
+			Value: New(2002, August, 7),
+		},
+	})
 }
 
 func Test_Date_UnmarshalText(t *testing.T) {
-	date := New(2002, August, 7)
-	assert.NoError(t, date.UnmarshalText([]byte(`0001-01-01`)))
-	assertDate(t, 1, January, 1, date)
-	assert.NoError(t, date.UnmarshalText([]byte(`2002-08-07`)))
-	assertDate(t, 2002, August, 7, date)
-	assert.Error(t, date.UnmarshalText([]byte(`2002`)))
-	assert.Error(t, date.UnmarshalText([]byte(`"2002-08-07"`)))
+	test.UnmarshalText(t, []test.CaseText[Date]{
+		{ // 0
+			Data:  `0001-01-01`,
+			Value: Date{},
+		},
+		{ // 1
+			Data:  `2002-08-07`,
+			Value: New(2002, August, 7),
+		},
+		{ // 2
+			Error: test.Error("date.DefaultParser: \"2002\": invalid date"),
+			Data:  `2002`,
+		},
+		{ // 3
+			Error: test.Error("date.DefaultParser: input too long: 12 > 10"),
+			Data:  `"2002-08-07"`,
+		},
+	}, nil)
 }
 
 func Test_Date_xml(t *testing.T) {
@@ -171,6 +209,16 @@ func Test_Date_xml(t *testing.T) {
 	assert.NoError(t, xml.Unmarshal(b, &test))
 	assertDate(t, 2020, August, 5, test.A)
 	assertDate(t, 2020, August, 7, test.B)
+}
+
+func Test_Date_Format(t *testing.T) {
+	Formatter = DefaultFormatter
+	assert.Equal(t, `00010101`, fmt.Sprintf("%b", Date{}))
+	assert.Equal(t, `0001-01-01`, fmt.Sprintf("%e", Date{}))
+	assert.Equal(t, `0001-01-01`, fmt.Sprintf("%s", Date{}))
+	assert.Equal(t, `20020807`, fmt.Sprintf("%b", New(2002, August, 7)))
+	assert.Equal(t, `2002-08-07`, fmt.Sprintf("%e", New(2002, August, 7)))
+	assert.Equal(t, `2002-08-07`, fmt.Sprintf("%s", New(2002, August, 7)))
 }
 
 func Test_Date_Scan(t *testing.T) {
@@ -188,13 +236,40 @@ func Test_Date_Value(t *testing.T) {
 }
 
 func Test_Date_String(t *testing.T) {
-	err := errors.New("error")
 	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
-		return nil, err
+		assert.Nil(t, buf)
+		assert.Equal(t, New(2002, August, 7), d)
+		assert.Equal(t, Format(0), f)
+		return []byte(`x`), nil
+	}
+	assert.Equal(t, `x`, New(2002, August, 7).String())
+
+	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
+		return nil, errors.New("error")
 	}
 	assert.Equal(t, `0001-01-01`, Date{}.String())
 	assert.Equal(t, `2002-08-07`, New(2002, August, 7).String())
-	Formatter = DefaultFormatter
-	assert.Equal(t, `0001-01-01`, Date{}.String())
-	assert.Equal(t, `2002-08-07`, New(2002, August, 7).String())
+}
+
+func Test_Date_format(t *testing.T) {
+	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
+		assert.Nil(t, buf)
+		assert.Equal(t, New(2002, August, 7), d)
+		assert.Equal(t, FormatBasic, f)
+		return []byte(`x`), nil
+	}
+	assert.Equal(t, []byte(`x`), New(2002, August, 7).format(FormatBasic))
+
+	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
+		return nil, errors.New("error")
+	}
+	assert.Equal(t, []byte(`0001-01-01`), Date{}.format(0))
+	assert.Equal(t, []byte(`2002-08-07`), New(2002, August, 7).format(0))
+}
+
+func Test_formatByVerb(t *testing.T) {
+	assert.Equal(t, Format(0), formatByVerb(' '))
+	assert.Equal(t, Format(0), formatByVerb('s'))
+	assert.Equal(t, Format(0), formatByVerb('e'))
+	assert.Equal(t, FormatBasic, formatByVerb('b'))
 }
