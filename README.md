@@ -73,3 +73,10 @@ import "go.lstv.dev/util/test"
   - `MarshalText` and `UnmarshalText`
   - `MarshalJSON` and `UnmarshalJSON`
 - See [examples](./test/README.md).
+
+## UUID
+```go
+import "go.lstv.dev/util/uu"
+```
+
+- Provides type `ID` to keep, marshal and unmarshal UUID values.
