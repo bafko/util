@@ -1,10 +1,11 @@
 # Livesport TV Utils
 
-[![Go Reference](https://pkg.go.dev/badge/go.lstv.dev/util.svg)](https://pkg.go.dev/go.lstv.dev/util)
-[![Latest release](https://img.shields.io/github/v/release/livesport-tv/util?display_name=tag&sort=semver)](https://github.com/livesport-tv/util/releases)
-[![License: MIT](https://img.shields.io/github/license/livesport-tv/util)](https://opensource.org/licenses/MIT)
-[![Go Report Card](https://goreportcard.com/badge/go.lstv.dev/util)](https://goreportcard.com/report/go.lstv.dev/util)
-[![tests](https://github.com/livesport-tv/util/actions/workflows/tests.yml/badge.svg)](https://github.com/livesport-tv/util/actions/workflows/tests.yml)
+[![Go Reference][goreference-img]][goreference]
+[![Latest release][release-img]][release]
+[![License: MIT][license-img]][license]
+[![tests][tests-img]][tests]
+[![Go Report Card][goreportcard-img]][goreportcard]
+[![codecov][codecov-img]][codecov]
 
 Open source implementation of Livesport TV utilities library.
 
@@ -80,3 +81,16 @@ import "go.lstv.dev/util/uu"
 ```
 
 - Provides type `ID` to keep, marshal and unmarshal UUID values.
+
+[codecov]: https://codecov.io/gh/livesport-tv/util
+[codecov-img]: https://codecov.io/gh/livesport-tv/util/branch/master/graph/badge.svg?token=SPG1OPCHFF
+[goreference]: https://pkg.go.dev/go.lstv.dev/util
+[goreference-img]: https://pkg.go.dev/badge/go.lstv.dev/util.svg
+[goreportcard]: https://goreportcard.com/report/go.lstv.dev/util
+[goreportcard-img]: https://goreportcard.com/badge/go.lstv.dev/util
+[license]: https://opensource.org/licenses/MIT
+[license-img]: https://img.shields.io/github/license/livesport-tv/util
+[release]: https://github.com/livesport-tv/util/releases
+[release-img]: https://img.shields.io/github/v/release/livesport-tv/util?display_name=tag&sort=semver
+[tests]: https://github.com/livesport-tv/util/actions/workflows/tests.yml
+[tests-img]: https://github.com/livesport-tv/util/actions/workflows/tests.yml/badge.svg
