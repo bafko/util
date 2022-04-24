@@ -5,6 +5,7 @@
 ## [0.7.0] - 2022-04-25
 ### Added
 - Format/parse and `fmt.Formatter` support for `uu` package.
+- Function `uu.RandomID`.
 
 ## [0.6.0] - 2022-04-19
 ### Added
