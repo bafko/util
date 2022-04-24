@@ -556,7 +556,7 @@ func Test_Ver_MarshalText(t *testing.T) {
 	}
 	test.MarshalText(t, []test.CaseText[Ver]{
 		{
-			Error: test.Error("format error"),
+			Error: test.Error("sem.Ver.MarshalText: format error"),
 			Value: Ver{
 				Major:      2,
 				Minor:      1,
@@ -600,7 +600,7 @@ func Test_Ver_UnmarshalText(t *testing.T) {
 	}
 	test.UnmarshalText(t, []test.CaseText[Ver]{
 		{
-			Error: test.Error("parse error"),
+			Error: test.Error("sem.Ver.UnmarshalText: parse error"),
 			Data:  `ab`,
 		},
 	}, nil)

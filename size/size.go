@@ -7,6 +7,7 @@ package size
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"math/bits"
 	"reflect"
@@ -33,27 +34,11 @@ type Size uint64
 
 // New creates new Size value with specified unit.
 func New[N constraint.Numbers](value N, unit string) (Size, error) {
-	if value == 0 {
-		if _, ok := zeroUnits[unit]; !ok {
-			return 0, newInvalidUnitError(unit)
-		}
-		return 0, nil
+	s, err := newSize(value, unit)
+	if err != nil {
+		return 0, fmt.Errorf("size.New: %w", err)
 	}
-	if value < 0 || N(uint64(value)) != value {
-		return 0, newInvalidValueError(value, unit)
-	}
-	if unit == "" {
-		return Size(value), nil
-	}
-	n, ok := unitToValues[unit]
-	if !ok {
-		return 0, newInvalidUnitError(unit)
-	}
-	hi, lo := bits.Mul64(uint64(value), n)
-	if hi != 0 {
-		return 0, newInvalidValueError(value, unit)
-	}
-	return Size(lo), nil
+	return s, nil
 }
 
 // Shorten returns the biggest unit as is possible for value without rounding.
@@ -91,14 +76,9 @@ func (s Size) BytesString() string {
 //
 // See also DisableMarshalTextUnit.
 func (s Size) MarshalText() ([]byte, error) {
-	if DisableMarshalTextUnit {
-		return strconv.AppendUint(nil, uint64(s), 10), nil
-	}
-
-	b := []byte(nil)
-	b, err := Formatter(b, s, 0)
+	b, err := s.marshalText()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("size.Size.MarshalText: %w", err)
 	}
 	return b, nil
 }
@@ -108,7 +88,7 @@ func (s Size) MarshalText() ([]byte, error) {
 func (s *Size) UnmarshalText(data []byte) error {
 	v, err := Parser(data, DefaultRule&ruleUnmarshalTextMask)
 	if err != nil {
-		return err
+		return fmt.Errorf("size.Size.UnmarshalText: %w", err)
 	}
 	*s = v
 	return nil
@@ -132,9 +112,9 @@ func (s Size) MarshalJSON() ([]byte, error) {
 	}
 
 	if !DisableMarshalJSONStringForm {
-		b, err := s.MarshalText()
+		b, err := s.marshalText()
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("size.Size.MarshalJSON: %w", err)
 		}
 		l := len(b)
 		b = append(b, ` "`...)
@@ -151,7 +131,7 @@ func (s Size) MarshalJSON() ([]byte, error) {
 func (s *Size) UnmarshalJSON(data []byte) error {
 	v, err := Parser(data, DefaultRule)
 	if err != nil {
-		return err
+		return fmt.Errorf("size.Size.UnmarshalJSON: %w", err)
 	}
 	*s = v
 	return nil
@@ -205,6 +185,43 @@ func Bytes[N constraint.Numbers](s Size) (value N, ok bool) {
 		}
 	}
 	return 0, false
+}
+
+func newSize[N constraint.Numbers](value N, unit string) (Size, error) {
+	if value == 0 {
+		if _, ok := zeroUnits[unit]; !ok {
+			return 0, newInvalidUnitError(unit)
+		}
+		return 0, nil
+	}
+	if value < 0 || N(uint64(value)) != value {
+		return 0, newInvalidValueError(value, unit)
+	}
+	if unit == "" {
+		return Size(value), nil
+	}
+	n, ok := unitToValues[unit]
+	if !ok {
+		return 0, newInvalidUnitError(unit)
+	}
+	hi, lo := bits.Mul64(uint64(value), n)
+	if hi != 0 {
+		return 0, newInvalidValueError(value, unit)
+	}
+	return Size(lo), nil
+}
+
+func (s Size) marshalText() ([]byte, error) {
+	if DisableMarshalTextUnit {
+		return strconv.AppendUint(nil, uint64(s), 10), nil
+	}
+
+	b := []byte(nil)
+	b, err := Formatter(b, s, 0)
+	if err != nil {
+		return nil, err
+	}
+	return b, nil
 }
 
 func (s Size) marshalJSONObject() []byte {

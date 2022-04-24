@@ -17,7 +17,7 @@ func Test_FilterFromTo_invalid(t *testing.T) {
 	date2 := New(2020, August, 5)
 	dateFilter, err := FilterFromTo(&date1, &date2)
 	assert.Nil(t, dateFilter)
-	assert.EqualError(t, err, "invalid from or to: 2020-08-07 > 2020-08-05")
+	assert.EqualError(t, err, "date.FilterFromTo: invalid from or to: 2020-08-07 > 2020-08-05")
 }
 
 func Test_FilterFromTo_nil_nil(t *testing.T) {

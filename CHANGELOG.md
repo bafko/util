@@ -7,6 +7,9 @@
 - Format/parse and `fmt.Formatter` support for `uu` package.
 - Function `uu.RandomID`.
 
+### Fixed
+- Error messages.
+
 ## [0.6.0] - 2022-04-19
 ### Added
 - Package `uu` with UUID support.

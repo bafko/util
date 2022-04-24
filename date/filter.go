@@ -37,7 +37,7 @@ func FilterFromTo(from, to *Date) (Filter, error) {
 		}, nil
 	}
 	if from.After(*to) {
-		return nil, fmt.Errorf("%w: %s > %s", ErrInvalidFromOrTo, from, to)
+		return nil, fmt.Errorf("date.FilterFromTo: %w: %s > %s", ErrInvalidFromOrTo, from, to)
 	}
 	return &filterFromTo{
 		from: *from,

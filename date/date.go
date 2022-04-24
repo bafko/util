@@ -186,13 +186,13 @@ func (d Date) MarshalBinary() ([]byte, error) {
 func (d *Date) UnmarshalBinary(data []byte) error {
 	l := len(data)
 	if l == 0 {
-		return fmt.Errorf("Date.UnmarshalBinary: %w: empty data", ErrInvalidLength)
+		return fmt.Errorf("date.Date.UnmarshalBinary: %w: empty data", ErrInvalidLength)
 	}
 	if data[0] != version {
-		return fmt.Errorf("Date.UnmarshalBinary: %w: expected %d instead of %d", ErrUnsupportedVersion, version, data[0])
+		return fmt.Errorf("date.Date.UnmarshalBinary: %w: expected %d instead of %d", ErrUnsupportedVersion, version, data[0])
 	}
 	if l != 7 { // version(1)+year(4)+month(1)+day(1)
-		return fmt.Errorf("Date.UnmarshalBinary: %w: expected 7 instead of %d", ErrInvalidLength, l)
+		return fmt.Errorf("date.Date.UnmarshalBinary: %w: expected 7 instead of %d", ErrInvalidLength, l)
 	}
 	d.year = (int32(data[1])<<24 | int32(data[2])<<16 | int32(data[3])<<8 | int32(data[4])) - 1
 	d.month = data[5] - 1
@@ -202,14 +202,18 @@ func (d *Date) UnmarshalBinary(data []byte) error {
 
 // MarshalText converts date to text with Formatter.
 func (d Date) MarshalText() ([]byte, error) {
-	return Formatter(nil, d, 0)
+	b, err := Formatter(nil, d, 0)
+	if err != nil {
+		return nil, fmt.Errorf("date.Date.MarshalText: %w", err)
+	}
+	return b, nil
 }
 
 // UnmarshalText using global Parser function.
 func (d *Date) UnmarshalText(data []byte) error {
 	date, err := Parser(data, 0)
 	if err != nil {
-		return err
+		return fmt.Errorf("date.Date.UnmarshalText: %w", err)
 	}
 	*d = date
 	return nil
@@ -232,7 +236,7 @@ func (d *Date) Scan(src any) error {
 		d.FromTime(t)
 		return nil
 	}
-	return fmt.Errorf("%w: expected time.Time instead of %T", ErrInvalidType, src)
+	return fmt.Errorf("date.Date.Scan: %w: expected time.Time instead of %T", ErrInvalidType, src)
 }
 
 // Value is support for database/sql package.

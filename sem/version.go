@@ -89,13 +89,13 @@ func (v Ver) Latest(ver Ver) Ver {
 
 // Valid check version validity.
 // It checks pre-release and build component of version.
-// It can return ErrInvalidPreRelease or ErrInvalidBuild errors.
+// It can return wrapped ErrInvalidPreRelease or ErrInvalidBuild errors.
 func (v Ver) Valid() error {
 	if v.PreRelease != "" && !preRelease.MatchString(v.PreRelease) {
-		return ErrInvalidPreRelease
+		return fmt.Errorf("sem.Ver.Valid: %w", ErrInvalidPreRelease)
 	}
 	if v.Build != "" && !build.MatchString(v.Build) {
-		return ErrInvalidBuild
+		return fmt.Errorf("sem.Ver.Valid: %w", ErrInvalidBuild)
 	}
 	return nil
 }
@@ -169,14 +169,18 @@ func (v Ver) NextPatch() Ver {
 
 // MarshalText converts version to text with Formatter.
 func (v Ver) MarshalText() ([]byte, error) {
-	return Formatter(nil, v, 0)
+	b, err := Formatter(nil, v, 0)
+	if err != nil {
+		return nil, fmt.Errorf("sem.Ver.MarshalText: %w", err)
+	}
+	return b, nil
 }
 
 // UnmarshalText using global Parser function.
 func (v *Ver) UnmarshalText(data []byte) error {
 	ver, err := Parser(data, 0)
 	if err != nil {
-		return err
+		return fmt.Errorf("sem.Ver.UnmarshalText: %w", err)
 	}
 	*v = ver
 	return nil

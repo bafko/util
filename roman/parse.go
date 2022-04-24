@@ -84,13 +84,14 @@ func checkInputLength[T constraint.ParserInput](funcName string, input T, r Rule
 	l := len(input)
 	if l == 0 {
 		if r&RuleDisableEmptyAsZero != 0 {
-			return false, newNumberFormatError(funcName, "", nil)
+			return false, newNumberFormatError(funcName, input, nil)
 		}
 		return true, nil
 	}
 	if MaxInputLength != 0 && l > MaxInputLength {
 		// do not use input for "input too long" error
-		return false, newNumberFormatError(funcName, "", fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
+		var t T
+		return false, newNumberFormatError(funcName, t, fmt.Errorf("%w: %d > %d", ErrInputTooLong, l, MaxInputLength))
 	}
 	return false, nil
 }

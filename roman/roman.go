@@ -21,14 +21,18 @@ type Number uint64
 //
 // See also DefaultFormat.
 func (n Number) MarshalText() ([]byte, error) {
-	return Formatter(nil, n, DefaultFormat)
+	b, err := Formatter(nil, n, DefaultFormat)
+	if err != nil {
+		return nil, fmt.Errorf("roman.Number.MarshalText: %w", err)
+	}
+	return b, nil
 }
 
 // UnmarshalText using global Parser function.
 func (n *Number) UnmarshalText(data []byte) error {
 	v, err := Parser(data, 0)
 	if err != nil {
-		return err
+		return fmt.Errorf("roman.Number.UnmarshalText: %w", err)
 	}
 	*n = v
 	return nil

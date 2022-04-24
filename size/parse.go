@@ -117,7 +117,7 @@ func unmarshalText[T constraint.ParserInput](input T, r Rule) (Size, error) {
 		return 0, newParseError(defaultParserFuncName, input, ErrUnitDisabled)
 	}
 
-	size, err := New(value, unit)
+	size, err := newSize(value, unit)
 	if err != nil {
 		return 0, newParseError(defaultParserFuncName, s, err)
 	}
@@ -245,7 +245,7 @@ func newOrError(value *uint64, unit *string) (Size, error) {
 	if unit == nil {
 		return 0, ErrMissingUnitKey
 	}
-	return New(*value, *unit)
+	return newSize(*value, *unit)
 }
 
 func decodeValue(d decoder) (*uint64, error) {
