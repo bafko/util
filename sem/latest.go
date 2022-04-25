@@ -5,6 +5,8 @@
 package sem
 
 import (
+	"fmt"
+
 	"go.lstv.dev/util/constraint"
 )
 
@@ -13,11 +15,11 @@ import (
 func LatestVersion[T1, T2 constraint.ParserInput](a T1, b T2) (Ver, error) {
 	av, err := ParseVersion(a)
 	if err != nil {
-		return Ver{}, err
+		return Ver{}, fmt.Errorf("sem.LatestVersion: %w", err)
 	}
 	bv, err := ParseVersion(b)
 	if err != nil {
-		return Ver{}, err
+		return Ver{}, fmt.Errorf("sem.LatestVersion: %w", err)
 	}
 	return av.Latest(bv), nil
 }
@@ -27,11 +29,11 @@ func LatestVersion[T1, T2 constraint.ParserInput](a T1, b T2) (Ver, error) {
 func LatestTag[T1, T2 constraint.ParserInput](a T1, b T2) (Ver, error) {
 	av, err := ParseTag(a)
 	if err != nil {
-		return Ver{}, err
+		return Ver{}, fmt.Errorf("sem.LatestTag: %w", err)
 	}
 	bv, err := ParseTag(b)
 	if err != nil {
-		return Ver{}, err
+		return Ver{}, fmt.Errorf("sem.LatestTag: %w", err)
 	}
 	return av.Latest(bv), nil
 }
@@ -41,11 +43,11 @@ func LatestTag[T1, T2 constraint.ParserInput](a T1, b T2) (Ver, error) {
 func Latest[T1, T2 constraint.ParserInput](a T1, b T2) (Ver, error) {
 	av, err := Parse(a)
 	if err != nil {
-		return Ver{}, err
+		return Ver{}, fmt.Errorf("sem.Latest: %w", err)
 	}
 	bv, err := Parse(b)
 	if err != nil {
-		return Ver{}, err
+		return Ver{}, fmt.Errorf("sem.Latest: %w", err)
 	}
 	return av.Latest(bv), nil
 }

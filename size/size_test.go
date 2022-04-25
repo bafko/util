@@ -28,7 +28,7 @@ func assertNewFail[N constraint.Numbers](t *testing.T, error string, value N, un
 	t.Helper()
 	actual, err := New[N](value, unit)
 	assert.Zero(t, actual)
-	assert.EqualError(t, err, error)
+	assert.EqualError(t, err, "size.New: "+error)
 }
 
 func Test_New(t *testing.T) {
@@ -155,7 +155,7 @@ func Test_Size_MarshalText(t *testing.T) {
 	}
 	test.MarshalText(t, []test.CaseText[Size]{
 		{
-			Error: test.Error("format error"),
+			Error: test.Error("size.Size.MarshalText: format error"),
 			Value: Size(10),
 		},
 	})
@@ -184,7 +184,7 @@ func Test_Size_UnmarshalText(t *testing.T) {
 	}
 	test.UnmarshalText(t, []test.CaseText[Size]{
 		{
-			Error: test.Error("parse error"),
+			Error: test.Error("size.Size.UnmarshalText: parse error"),
 			Data:  text,
 		},
 	}, nil)
@@ -221,7 +221,7 @@ func Test_Size_MarshalJSON(t *testing.T) {
 	}
 	test.MarshalJSON(t, []test.CaseJSON[Size]{
 		{
-			Error: test.Error("format error"),
+			Error: test.Error("size.Size.MarshalJSON: format error"),
 			Value: Size(10),
 		},
 	})
@@ -258,7 +258,7 @@ func Test_Size_UnmarshalJSON(t *testing.T) {
 	}
 	test.UnmarshalJSON(t, []test.CaseJSON[Size]{
 		{
-			Error: test.Error("parse error"),
+			Error: test.Error("size.Size.UnmarshalJSON: parse error"),
 			Data:  json,
 		},
 	}, nil)

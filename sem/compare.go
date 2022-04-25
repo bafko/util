@@ -5,6 +5,7 @@
 package sem
 
 import (
+	"fmt"
 	"strings"
 
 	"go.lstv.dev/util/constraint"
@@ -60,11 +61,11 @@ func comparePreReleaseSuffix(shorter string, longer string) int {
 func CompareVersion[T1, T2 constraint.ParserInput](a, b string) (int, error) {
 	av, err := ParseVersion(a)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sem.CompareVersion: %w", err)
 	}
 	bv, err := ParseVersion(b)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sem.CompareVersion: %w", err)
 	}
 	return av.Compare(bv), nil
 }
@@ -74,11 +75,11 @@ func CompareVersion[T1, T2 constraint.ParserInput](a, b string) (int, error) {
 func CompareTag[T1, T2 constraint.ParserInput](a T1, b T2) (int, error) {
 	av, err := ParseTag(a)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sem.CompareTag: %w", err)
 	}
 	bv, err := ParseTag(b)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sem.CompareTag: %w", err)
 	}
 	return av.Compare(bv), nil
 }
@@ -88,11 +89,11 @@ func CompareTag[T1, T2 constraint.ParserInput](a T1, b T2) (int, error) {
 func Compare[T1, T2 constraint.ParserInput](a T1, b T2) (int, error) {
 	av, err := Parse(a)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sem.Compare: %w", err)
 	}
 	bv, err := Parse(b)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("sem.Compare: %w", err)
 	}
 	return av.Compare(bv), nil
 }

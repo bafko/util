@@ -17,9 +17,11 @@ var (
 	ErrInputTooLong = errors.New("input too long")
 
 	// ErrInvalidPreRelease is wrapped and returned by Valid function if pre-release part is not valid.
+	// Use errors.Is to check if returned error is ErrInvalidPreRelease.
 	ErrInvalidPreRelease = errors.New("invalid pre-release")
 
 	// ErrInvalidBuild is wrapped and returned by Valid function if build part is not valid.
+	// Use errors.Is to check if returned error is ErrInvalidBuild.
 	ErrInvalidBuild = errors.New("invalid build")
 
 	// ErrTagFormNotAllowed is wrapped and returned if RuleDisableTag is present and input is tag.

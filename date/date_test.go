@@ -148,19 +148,19 @@ func Test_Date_UnmarshalBinary(t *testing.T) {
 			Value: New(2002, August, 7),
 		},
 		{ // 2
-			Error: test.Error("Date.UnmarshalBinary: invalid length: empty data"),
+			Error: test.Error("date.Date.UnmarshalBinary: invalid length: empty data"),
 			Data:  []byte(nil),
 		},
 		{ // 3
-			Error: test.Error("Date.UnmarshalBinary: invalid length: expected 7 instead of 1"),
+			Error: test.Error("date.Date.UnmarshalBinary: invalid length: expected 7 instead of 1"),
 			Data:  []byte{1},
 		},
 		{ // 4
-			Error: test.Error("Date.UnmarshalBinary: unsupported version: expected 1 instead of 50"),
+			Error: test.Error("date.Date.UnmarshalBinary: unsupported version: expected 1 instead of 50"),
 			Data:  []byte(`2002`),
 		},
 		{ // 5
-			Error: test.Error("Date.UnmarshalBinary: unsupported version: expected 1 instead of 34"),
+			Error: test.Error("date.Date.UnmarshalBinary: unsupported version: expected 1 instead of 34"),
 			Data:  []byte(`"2002-08-07"`),
 		},
 	}, nil)
@@ -177,6 +177,19 @@ func Test_Date_MarshalText(t *testing.T) {
 			Value: New(2002, August, 7),
 		},
 	})
+	Formatter = func(buf []byte, d Date, f Format) ([]byte, error) {
+		assert.Nil(t, buf)
+		assert.Equal(t, New(2002, August, 7), d)
+		assert.Equal(t, Format(0), f)
+		return nil, errors.New("error")
+	}
+	test.MarshalText(t, []test.CaseText[Date]{
+		{
+			Error: test.Error("date.Date.MarshalText: error"),
+			Value: New(2002, August, 7),
+		},
+	})
+	Formatter = DefaultFormatter
 }
 
 func Test_Date_UnmarshalText(t *testing.T) {
@@ -190,11 +203,11 @@ func Test_Date_UnmarshalText(t *testing.T) {
 			Value: New(2002, August, 7),
 		},
 		{ // 2
-			Error: test.Error("date.DefaultParser: \"2002\": invalid date"),
+			Error: test.Error("date.Date.UnmarshalText: date.DefaultParser: \"2002\": invalid date"),
 			Data:  `2002`,
 		},
 		{ // 3
-			Error: test.Error("date.DefaultParser: input too long: 12 > 10"),
+			Error: test.Error("date.Date.UnmarshalText: date.DefaultParser: input too long: 12 > 10"),
 			Data:  `"2002-08-07"`,
 		},
 	}, nil)

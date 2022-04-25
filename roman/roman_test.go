@@ -34,7 +34,7 @@ func Test_Number_MarshalText(t *testing.T) {
 	}
 	test.MarshalText(t, []test.CaseText[Number]{
 		{
-			Error: test.Error("format error"),
+			Error: test.Error("roman.Number.MarshalText: format error"),
 			Value: Number(15749),
 		},
 	})
@@ -48,7 +48,7 @@ func Test_Number_UnmarshalText(t *testing.T) {
 	}
 	test.UnmarshalText(t, []test.CaseText[Number]{
 		{
-			Error: test.Error("error"),
+			Error: test.Error("roman.Number.UnmarshalText: error"),
 			Data:  `abc`,
 		},
 	}, nil)
