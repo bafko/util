@@ -53,10 +53,11 @@ func MarshalText[T any](t TestingT, cases []CaseText[T]) {
 func UnmarshalText[T any](t TestingT, cases []CaseText[T], helper TypeHelper[T]) {
 	t.Helper()
 
+	var f func(*T) encoding.TextUnmarshaler
 	for i, c := range cases {
 		if i == 0 {
-			if _, ok := any(&c.Value).(encoding.TextUnmarshaler); !ok {
-				assert.FailNowf(t, "unable to test UnmarshalText", "type *%T must implements encoding.TextUnmarshaler", &c.Value)
+			if f = castToFunc[T, encoding.TextUnmarshaler](c.Value); f == nil {
+				assert.FailNowf(t, "unable to test UnmarshalText", "type %T must implements encoding.TextUnmarshaler", c.Value)
 				return
 			}
 		}
@@ -66,15 +67,15 @@ func UnmarshalText[T any](t TestingT, cases []CaseText[T], helper TypeHelper[T])
 		}
 
 		failInfo := fmt.Sprintf("case %d failed", i)
-		v := helperNew[T](helper, &c.Value)
-		err := any(v).(encoding.TextUnmarshaler).UnmarshalText([]byte(c.Data))
+		v := helperNew[T](helper, c.Value)
+		err := f(&v).UnmarshalText([]byte(c.Data))
 		if c.Error != nil {
 			if c.Error(t, err, failInfo) {
 				helperAssertEmpty(helper, t, v, failInfo)
 			}
 		} else {
 			if assert.NoError(t, err, failInfo) {
-				helperAssertEqual(helper, t, &c.Value, v, failInfo)
+				helperAssertEqual(helper, t, c.Value, v, failInfo)
 			}
 		}
 	}

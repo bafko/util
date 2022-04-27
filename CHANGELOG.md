@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [0.7.1] - 2022-04-27
+### Fixed
+- Package `test` allows to test also pointer types.
+
 ## [0.7.0] - 2022-04-25
 ### Added
 - Format/parse and `fmt.Formatter` support for `uu` package.
@@ -100,7 +104,8 @@
 ### Added
 - First release of util.
 
-[Unreleased]: https://github.com/livesport-tv/util/compare/v0.7.0...master
+[Unreleased]: https://github.com/livesport-tv/util/compare/v0.7.1...master
+[0.7.1]: https://github.com/livesport-tv/util/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/livesport-tv/util/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/livesport-tv/util/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/livesport-tv/util/compare/v0.4.0...v0.5.0

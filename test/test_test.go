@@ -15,49 +15,86 @@ type mockTypeHelperString struct {
 	mock.Mock
 }
 
-func (m *mockTypeHelperString) New(value *string) *string {
+func (m *mockTypeHelperString) New(value string) string {
 	args := m.Called(value)
-	return args.Get(0).(*string)
+	return args.Get(0).(string)
 }
 
-func (m *mockTypeHelperString) AssertEmpty(t TestingT, value *string, failInfo string) {
+func (m *mockTypeHelperString) AssertEmpty(t TestingT, value string, failInfo string) {
 	m.Called(t, value, failInfo)
 }
 
-func (m *mockTypeHelperString) AssertEqual(t TestingT, expected, actual *string, failInfo string) {
+func (m *mockTypeHelperString) AssertEqual(t TestingT, expected, actual string, failInfo string) {
 	m.Called(t, expected, actual, failInfo)
 }
 
 func Test_helperNew(t *testing.T) {
 	empty := ""
 	s := "abc"
-	p := &s
-	assert.Equal(t, &empty, helperNew[string](nil, p))
+	assert.Equal(t, empty, helperNew[string](nil, s))
+
+	assert.Equal(t, &empty, helperNew[*string](nil, &s))
 
 	m := &mockTypeHelperString{}
-	m.On("New", p).Return(p)
-	assert.Equal(t, p, helperNew[string](m, p))
+	m.On("New", s).Return(s)
+	assert.Equal(t, s, helperNew[string](m, s))
 	m.AssertExpectations(t)
 }
 
 func Test_helperAssertEmpty(t *testing.T) {
 	s := "abc"
-	p := &s
 	m := &mockTypeHelperString{}
 	mt := &mockT{}
 	mt.On("Helper")
-	m.On("AssertEmpty", mt, p, "case 0 failed").Return(p)
-	helperAssertEmpty[string](m, mt, p, "case 0 failed")
+	m.On("AssertEmpty", mt, s, "case 0 failed")
+	helperAssertEmpty[string](m, mt, s, "case 0 failed")
 	m.AssertExpectations(t)
 }
 
 func Test_helperAssertEqual(t *testing.T) {
 	s := "abc"
-	p := &s
 	m := &mockTypeHelperString{}
 	mt := &mockT{}
 	mt.On("Helper")
-	m.On("AssertEqual", mt, p, p, "case 0 failed").Return(p)
-	helperAssertEqual[string](m, mt, p, p, "case 0 failed")
+	m.On("AssertEqual", mt, s, s, "case 0 failed")
+	helperAssertEqual[string](m, mt, s, s, "case 0 failed")
 	m.AssertExpectations(t)
+}
+
+type mockXAsValue struct {
+	*mock.Mock
+}
+
+func (m mockXAsValue) X() {
+	m.Called()
+}
+
+type mockXAsPointer struct {
+	*mock.Mock
+}
+
+func (m *mockXAsPointer) X() {
+	m.Called()
+}
+
+type hasX interface {
+	X()
+}
+
+func Test_castToFunc(t *testing.T) {
+	v := mockXAsValue{
+		Mock: &mock.Mock{},
+	}
+	v.On("X").Once()
+	fv := castToFunc[mockXAsValue, hasX](v)
+	fv(&v).X()
+
+	p := &mockXAsPointer{
+		Mock: &mock.Mock{},
+	}
+	p.On("X").Once()
+	fp := castToFunc[*mockXAsPointer, hasX](p)
+	fp(&p).X()
+
+	assert.Nil(t, castToFunc[string, hasX](""))
 }

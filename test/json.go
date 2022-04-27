@@ -53,10 +53,11 @@ func MarshalJSON[T any](t TestingT, cases []CaseJSON[T]) {
 func UnmarshalJSON[T any](t TestingT, cases []CaseJSON[T], helper TypeHelper[T]) {
 	t.Helper()
 
+	var f func(*T) json.Unmarshaler
 	for i, c := range cases {
 		if i == 0 {
-			if _, ok := any(&c.Value).(json.Unmarshaler); !ok {
-				assert.FailNowf(t, "unable to test UnmarshalJSON", "type *%T must implements json.Unmarshaler", c.Value)
+			if f = castToFunc[T, json.Unmarshaler](c.Value); f == nil {
+				assert.FailNowf(t, "unable to test UnmarshalJSON", "type %T must implements json.Unmarshaler", c.Value)
 				return
 			}
 		}
@@ -66,15 +67,15 @@ func UnmarshalJSON[T any](t TestingT, cases []CaseJSON[T], helper TypeHelper[T])
 		}
 
 		failInfo := fmt.Sprintf("case %d failed", i)
-		v := helperNew[T](helper, &c.Value)
-		err := any(v).(json.Unmarshaler).UnmarshalJSON([]byte(c.Data))
+		v := helperNew[T](helper, c.Value)
+		err := f(&v).(json.Unmarshaler).UnmarshalJSON([]byte(c.Data))
 		if c.Error != nil {
 			if c.Error(t, err, failInfo) {
 				helperAssertEmpty(helper, t, v, failInfo)
 			}
 		} else {
 			if assert.NoError(t, err, failInfo) {
-				helperAssertEqual(helper, t, &c.Value, v, failInfo)
+				helperAssertEqual(helper, t, c.Value, v, failInfo)
 			}
 		}
 	}
