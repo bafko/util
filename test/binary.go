@@ -53,10 +53,11 @@ func MarshalBinary[T any](t TestingT, cases []CaseBinary[T]) {
 func UnmarshalBinary[T any](t TestingT, cases []CaseBinary[T], helper TypeHelper[T]) {
 	t.Helper()
 
+	var f func(*T) encoding.BinaryUnmarshaler
 	for i, c := range cases {
 		if i == 0 {
-			if _, ok := any(&c.Value).(encoding.BinaryUnmarshaler); !ok {
-				assert.FailNowf(t, "unable to test UnmarshalBinary", "type *%T must implements encoding.BinaryUnmarshaler", &c.Value)
+			if f = castToFunc[T, encoding.BinaryUnmarshaler](c.Value); f == nil {
+				assert.FailNowf(t, "unable to test UnmarshalBinary", "type %T must implements encoding.BinaryUnmarshaler", c.Value)
 				return
 			}
 		}
@@ -66,15 +67,15 @@ func UnmarshalBinary[T any](t TestingT, cases []CaseBinary[T], helper TypeHelper
 		}
 
 		failInfo := fmt.Sprintf("case %d failed", i)
-		v := helperNew[T](helper, &c.Value)
-		err := any(v).(encoding.BinaryUnmarshaler).UnmarshalBinary(c.Data)
+		v := helperNew[T](helper, c.Value)
+		err := f(&v).(encoding.BinaryUnmarshaler).UnmarshalBinary(c.Data)
 		if c.Error != nil {
 			if c.Error(t, err, failInfo) {
 				helperAssertEmpty(helper, t, v, failInfo)
 			}
 		} else {
 			if assert.NoError(t, err, failInfo) {
-				helperAssertEqual(helper, t, &c.Value, v, failInfo)
+				helperAssertEqual(helper, t, c.Value, v, failInfo)
 			}
 		}
 	}
