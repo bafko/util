@@ -5,6 +5,8 @@
 package test
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -97,4 +99,24 @@ func Test_castToFunc(t *testing.T) {
 	fp(&p).X()
 
 	assert.Nil(t, castToFunc[string, hasX](""))
+}
+
+func Test_panicError(t *testing.T) {
+	err := errors.New("custom error")
+	assert.Equal(t, err, panicError(err, nil))
+
+	actual := panicError(err, panicAndRecover())
+	if assert.NotNil(t, actual) {
+		prefix := strings.SplitAfterN(actual.Error(), "\n", 2)
+		if assert.Len(t, prefix, 2) {
+			assert.Equal(t, "panic: failed\n", prefix[0])
+		}
+	}
+}
+
+func panicAndRecover() (r any) {
+	defer func() {
+		r = recover()
+	}()
+	panic("failed")
 }

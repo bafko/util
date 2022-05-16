@@ -10,6 +10,8 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
+const mockPanic = "PANIC"
+
 type mockT struct {
 	mock.Mock
 }
@@ -82,5 +84,8 @@ func (m mockData[T]) isError() bool {
 }
 
 func isError(data []byte) bool {
+	if string(data) == mockPanic {
+		panic("failed")
+	}
 	return string(data) == "error"
 }

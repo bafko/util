@@ -5,6 +5,7 @@
 package test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -57,6 +58,49 @@ func Test_MarshalBinary_FailType(t *testing.T) {
 	m.AssertExpectations(t)
 }
 
+func Test_MarshalBinary_Panic(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(1)
+	cases := []CaseBinary[mockData[string]]{
+		{
+			Error: ErrorHasPrefix("panic: failed\n"),
+			Value: mockData[string]{mockPanic},
+		},
+	}
+	MarshalBinary(m, cases)
+	m.AssertExpectations(t)
+}
+
+func Test_MarshalBinary_Before(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseBinary[mockData[string]]{
+		{
+			Before: func(index int, c *CaseBinary[mockData[string]]) error {
+				return errors.New("custom error")
+			},
+		},
+	}
+	MarshalBinary(m, cases)
+	m.AssertExpectations(t)
+}
+
+func Test_MarshalBinary_After(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseBinary[mockData[string]]{
+		{
+			After: func(index int, c *CaseBinary[mockData[string]]) error {
+				return errors.New("custom error")
+			},
+		},
+	}
+	MarshalBinary(m, cases)
+	m.AssertExpectations(t)
+}
+
 func Test_UnmarshalBinary(t *testing.T) {
 	m := &mockT{}
 	m.On("Helper").Times(9)
@@ -98,6 +142,50 @@ func Test_UnmarshalBinary_FailType(t *testing.T) {
 		{ // 0
 			Data:  []byte(``),
 			Value: 0,
+		},
+	}
+	UnmarshalBinary(m, cases, nil)
+	m.AssertExpectations(t)
+}
+
+func Test_UnmarshalBinary_Panic(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseBinary[mockData[string]]{
+		{
+			Error: ErrorHasPrefix("panic: failed\n"),
+			Value: mockData[string]{mockPanic},
+		},
+	}
+	UnmarshalBinary(m, cases, nil)
+	m.AssertExpectations(t)
+}
+
+func Test_UnmarshalBinary_Before(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseBinary[mockData[string]]{
+		{
+			Before: func(index int, c *CaseBinary[mockData[string]]) error {
+				return errors.New("custom error")
+			},
+		},
+	}
+	UnmarshalBinary(m, cases, nil)
+	m.AssertExpectations(t)
+}
+
+func Test_UnmarshalBinary_After(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseBinary[mockData[string]]{
+		{
+			After: func(index int, c *CaseBinary[mockData[string]]) error {
+				return errors.New("custom error")
+			},
 		},
 	}
 	UnmarshalBinary(m, cases, nil)

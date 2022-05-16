@@ -5,6 +5,7 @@
 package test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -57,6 +58,49 @@ func Test_MarshalText_FailType(t *testing.T) {
 	m.AssertExpectations(t)
 }
 
+func Test_MarshalText_Panic(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(1)
+	cases := []CaseText[mockData[string]]{
+		{
+			Error: ErrorHasPrefix("panic: failed\n"),
+			Value: mockData[string]{mockPanic},
+		},
+	}
+	MarshalText(m, cases)
+	m.AssertExpectations(t)
+}
+
+func Test_MarshalText_Before(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseText[mockData[string]]{
+		{
+			Before: func(index int, c *CaseText[mockData[string]]) error {
+				return errors.New("custom error")
+			},
+		},
+	}
+	MarshalText(m, cases)
+	m.AssertExpectations(t)
+}
+
+func Test_MarshalText_After(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseText[mockData[string]]{
+		{
+			After: func(index int, c *CaseText[mockData[string]]) error {
+				return errors.New("custom error")
+			},
+		},
+	}
+	MarshalText(m, cases)
+	m.AssertExpectations(t)
+}
+
 func Test_UnmarshalText(t *testing.T) {
 	m := &mockT{}
 	m.On("Helper").Times(9)
@@ -98,6 +142,50 @@ func Test_UnmarshalText_FailType(t *testing.T) {
 		{
 			Data:  ``,
 			Value: ``,
+		},
+	}
+	UnmarshalText(m, cases, nil)
+	m.AssertExpectations(t)
+}
+
+func Test_UnmarshalText_Panic(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseText[mockData[string]]{
+		{
+			Error: ErrorHasPrefix("panic: failed\n"),
+			Value: mockData[string]{mockPanic},
+		},
+	}
+	UnmarshalText(m, cases, nil)
+	m.AssertExpectations(t)
+}
+
+func Test_UnmarshalText_Before(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseText[mockData[string]]{
+		{
+			Before: func(index int, c *CaseText[mockData[string]]) error {
+				return errors.New("custom error")
+			},
+		},
+	}
+	UnmarshalText(m, cases, nil)
+	m.AssertExpectations(t)
+}
+
+func Test_UnmarshalText_After(t *testing.T) {
+	m := &mockT{}
+	m.On("Helper").Times(3)
+	m.On("Errorf", "\n%s", mock.Anything).Times(1)
+	cases := []CaseText[mockData[string]]{
+		{
+			After: func(index int, c *CaseText[mockData[string]]) error {
+				return errors.New("custom error")
+			},
 		},
 	}
 	UnmarshalText(m, cases, nil)

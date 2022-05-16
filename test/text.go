@@ -14,9 +14,12 @@ import (
 // CaseText represents one specific test case for MarshalText and/or UnmarshalText method.
 type CaseText[T any] struct {
 	Constraint Constraint
+	Before     func(index int, c *CaseText[T]) error
+	After      func(index int, c *CaseText[T]) error
 	Error      AssertErrorFunc
 	Data       string
 	Value      T
+	Custom     any // user-defined custom value for Before and/or After function
 }
 
 // MarshalText runs all passed test cases of method with same name.
@@ -36,7 +39,13 @@ func MarshalText[T any](t TestingT, cases []CaseText[T]) {
 		}
 
 		failInfo := fmt.Sprintf("case %d failed", i)
-		b, err := any(c.Value).(encoding.TextMarshaler).MarshalText()
+		if !assert.NoError(t, callForCase(i, &c, c.Before), failInfo) {
+			continue
+		}
+		b, err := safeMarshalText(any(c.Value).(encoding.TextMarshaler))
+		if !assert.NoError(t, callForCase(i, &c, c.After), failInfo) {
+			continue
+		}
 		if c.Error != nil {
 			if c.Error(t, err, failInfo) {
 				assert.Nil(t, b, failInfo)
@@ -67,8 +76,14 @@ func UnmarshalText[T any](t TestingT, cases []CaseText[T], helper TypeHelper[T])
 		}
 
 		failInfo := fmt.Sprintf("case %d failed", i)
+		if !assert.NoError(t, callForCase(i, &c, c.Before), failInfo) {
+			continue
+		}
 		v := helperNew[T](helper, c.Value)
-		err := f(&v).UnmarshalText([]byte(c.Data))
+		err := safeUnmarshalText(f(&v), []byte(c.Data))
+		if !assert.NoError(t, callForCase(i, &c, c.After), failInfo) {
+			continue
+		}
 		if c.Error != nil {
 			if c.Error(t, err, failInfo) {
 				helperAssertEmpty(helper, t, v, failInfo)
@@ -79,4 +94,18 @@ func UnmarshalText[T any](t TestingT, cases []CaseText[T], helper TypeHelper[T])
 			}
 		}
 	}
+}
+
+func safeMarshalText(m encoding.TextMarshaler) (data []byte, err error) {
+	defer func() {
+		err = panicError(err, recover())
+	}()
+	return m.MarshalText()
+}
+
+func safeUnmarshalText(u encoding.TextUnmarshaler, data []byte) (err error) {
+	defer func() {
+		err = panicError(err, recover())
+	}()
+	return u.UnmarshalText(data)
 }

@@ -14,9 +14,12 @@ import (
 // CaseBinary represents one specific test case for MarshalBinary and/or UnmarshalBinary method.
 type CaseBinary[T any] struct {
 	Constraint Constraint
+	Before     func(index int, c *CaseBinary[T]) error
+	After      func(index int, c *CaseBinary[T]) error
 	Error      AssertErrorFunc
 	Data       []byte
 	Value      T
+	Custom     any // user-defined custom value for Before and/or After function
 }
 
 // MarshalBinary runs all passed test cases of method with same name.
@@ -36,7 +39,13 @@ func MarshalBinary[T any](t TestingT, cases []CaseBinary[T]) {
 		}
 
 		failInfo := fmt.Sprintf("case %d failed", i)
-		b, err := any(c.Value).(encoding.BinaryMarshaler).MarshalBinary()
+		if !assert.NoError(t, callForCase(i, &c, c.Before), failInfo) {
+			continue
+		}
+		b, err := safeMarshalBinary(any(c.Value).(encoding.BinaryMarshaler))
+		if !assert.NoError(t, callForCase(i, &c, c.After), failInfo) {
+			continue
+		}
 		if c.Error != nil {
 			if c.Error(t, err, failInfo) {
 				assert.Nil(t, b, failInfo)
@@ -67,8 +76,14 @@ func UnmarshalBinary[T any](t TestingT, cases []CaseBinary[T], helper TypeHelper
 		}
 
 		failInfo := fmt.Sprintf("case %d failed", i)
+		if !assert.NoError(t, callForCase(i, &c, c.Before), failInfo) {
+			continue
+		}
 		v := helperNew[T](helper, c.Value)
-		err := f(&v).(encoding.BinaryUnmarshaler).UnmarshalBinary(c.Data)
+		err := safeUnmarshalBinary(f(&v).(encoding.BinaryUnmarshaler), c.Data)
+		if !assert.NoError(t, callForCase(i, &c, c.After), failInfo) {
+			continue
+		}
 		if c.Error != nil {
 			if c.Error(t, err, failInfo) {
 				helperAssertEmpty(helper, t, v, failInfo)
@@ -79,4 +94,18 @@ func UnmarshalBinary[T any](t TestingT, cases []CaseBinary[T], helper TypeHelper
 			}
 		}
 	}
+}
+
+func safeMarshalBinary(m encoding.BinaryMarshaler) (data []byte, err error) {
+	defer func() {
+		err = panicError(err, recover())
+	}()
+	return m.MarshalBinary()
+}
+
+func safeUnmarshalBinary(u encoding.BinaryUnmarshaler, data []byte) (err error) {
+	defer func() {
+		err = panicError(err, recover())
+	}()
+	return u.UnmarshalBinary(data)
 }
