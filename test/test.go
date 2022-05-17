@@ -6,7 +6,9 @@
 package test
 
 import (
+	"fmt"
 	"reflect"
+	"runtime/debug"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -66,4 +68,22 @@ func castToFunc[T, I any](value T) func(*T) I {
 		}
 	}
 	return nil
+}
+
+func callForCase[C any](index int, c *C, f func(index int, c *C) error) (err error) {
+	if f == nil {
+		return nil
+	}
+	defer func() {
+		err = panicError(err, recover())
+	}()
+	return f(index, c)
+}
+
+func panicError(err error, r any) error {
+	if r != nil {
+		stack := string(debug.Stack())
+		return fmt.Errorf("panic: %v\n%s", r, stack)
+	}
+	return err
 }

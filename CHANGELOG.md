@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2022-05-14
+### Added
+- Panic handling for `test.*` functions.
+- Field `Before` and `After` to `test.Case*` types.
+- New error checkers:
+  - `test.AnyError`
+  - `test.ErrorHasPrefix`
+  - `test.ErrorHasSuffix`
+  - `test.ErrorMatch`
+
 ## [0.7.1] - 2022-04-27
 ### Fixed
 - Package `test` allows to test also pointer types.
@@ -104,7 +114,8 @@
 ### Added
 - First release of util.
 
-[Unreleased]: https://github.com/livesport-tv/util/compare/v0.7.1...master
+[Unreleased]: https://github.com/livesport-tv/util/compare/v0.8.0...master
+[0.8.0]: https://github.com/livesport-tv/util/compare/v0.7.1...v0.8.0
 [0.7.1]: https://github.com/livesport-tv/util/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/livesport-tv/util/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/livesport-tv/util/compare/v0.5.0...v0.6.0
